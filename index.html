@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-stone-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>California Data Center Siting Model</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <script>
+    window.__showLoadError = function (message) {
+      var el = document.getElementById('load-error');
+      if (!el) return;
+      el.style.display = 'block';
+      el.innerHTML = '<strong>App failed to load</strong><br><span id="load-error-detail"></span>';
+      var detail = document.getElementById('load-error-detail');
+      if (detail) detail.textContent = message;
+    };
+    window.__cdnLoadError = function (name) {
+      window.__showLoadError(name + ' failed to download. Check your internet connection and refresh.');
+    };
+    window.addEventListener('error', function (event) {
+      if (event.message) window.__showLoadError(event.message);
+    });
+    window.addEventListener('unhandledrejection', function (event) {
+      var reason = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+      window.__showLoadError(reason);
+    });
+  </script>
+  <script src="https://cdn.tailwindcss.com/3.4.17" onerror="window.__cdnLoadError('Tailwind CSS')"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+            serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+            mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin onerror="window.__cdnLoadError('React')"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin onerror="window.__cdnLoadError('ReactDOM')"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js" onerror="window.__cdnLoadError('Babel')"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap');
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+    @media print {
+      @page { margin: 0.75in; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: #fff !important; color: #111 !important; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="h-full text-stone-800 overflow-x-hidden antialiased">
+  <noscript>
+    <p style="padding:1rem;color:#991b1b;background:#fef2f2;">JavaScript is required to run this scenario tool.</p>
+  </noscript>
+  <div id="load-error" role="alert" style="display:none;margin:1rem;padding:1rem;border:1px solid #f87171;background:#450a0a;color:#fecaca;border-radius:0.5rem;font-size:0.875rem;"></div>
+  <div id="root" class="min-h-full flex flex-col">
+    <p style="padding:1.5rem;color:#78716c;">Loading scenario model…</p>
+  </div>
+
+  <script type="text/babel" data-presets="react,env">
+    const { useState, useMemo } = React;
+
+    const baselines = {
+      metadata: {
+        jurisdiction: 'California',
+        lastUpdated: 'June 2026',
+        disclaimer: 'This is a learning and planning worksheet, not legal or financial advice.',
+        modeledScenarioDefinition: 'A modeled scenario is a what-if exercise. We borrow ideas from real policy debates, simplify them, and ask what might happen if they worked a certain way. It helps you compare options. It does not state what the law requires today.',
+        sources: [
+          'CEC Integrated Energy Policy Report (demand forecast references)',
+          'CAISO interconnection queue summaries (pipeline scale references)',
+          'CPUC general rate case and large-load tariff concepts (cost allocation references)',
+        ],
+      },
+      gridForecasts: {
+        currentLoad2026_MW: 1000,
+        projectedLoad2030_MW: 1800,
+        projectedLoad2040_MW: 4500,
+        activeQueuePipeline_MW: 4500,
+      },
+      utilityBaselines: {
+        PGE: {
+          name: 'Pacific Gas & Electric territory',
+          estimatedGridUpgradeCostPerMW: 250000,
+          regionalBrief: 'Illustrative Northern California placeholder. Real upgrade costs depend on substation location, voltage, and study results. These figures are not from any utility interconnection estimate.',
+        },
+        SDGE: {
+          name: 'San Diego Gas & Electric territory',
+          estimatedGridUpgradeCostPerMW: 410000,
+          regionalBrief: 'Illustrative San Diego region placeholder. Use for comparison only, not as a utility quote.',
+        },
+        SCE: {
+          name: 'Southern California Edison territory',
+          estimatedGridUpgradeCostPerMW: 180000,
+          regionalBrief: 'Illustrative Southern California placeholder. Actual interconnection costs vary widely by site.',
+        },
+      },
+      legislativeTriggers: {
+        AB1577: {
+          name: 'Operational disclosure scenario (AB 1577 style)',
+          status: 'modeled',
+          statusNote: 'Hypothetical disclosure threshold for sensitivity analysis. Verify against current statute and CEC guidance.',
+          minThreshold_kW: 500,
+          mandatoryMetrics: ['PUE (Power Usage Effectiveness)', 'On-site waste heat recovery (%)', 'Backup generation emissions (CO2 / PM2.5)'],
+        },
+        SB886: {
+          name: 'Ratepayer cost allocation scenario (SB 886 style)',
+          status: 'modeled',
+          statusNote: 'Hypothetical rule for facilities at or above the size threshold in this model. Not a CPUC tariff.',
+          transmissionServiceThreshold_MW: 25,
+          minZeroCarbonContractYears: 15,
+          minZeroCarbonLoadMatchPercent: 50,
+          assumedAnnualPpaCostPerMatchedMW: 75000,
+          subThresholdDeveloperShare: 0.75,
+        },
+        SB887: {
+          name: 'CEQA timeline scenario (SB 887 style)',
+          status: 'modeled',
+          statusNote: 'Hypothetical siting timeline adjustments. CEQA is lead-agency driven; utilities do not set these clocks.',
+          eldpAcceleratedReviewMonths: 12,
+          standardCeqaLitigationMonths: 36,
+          evaporativeCoolingPenaltyMonths: 12,
+        },
+      },
+    };
+
+    function calculateSB886Tariff(megawatts, utilityCode) {
+      const utility = baselines.utilityBaselines[utilityCode];
+      const rules = baselines.legislativeTriggers.SB886;
+      if (!utility) return null;
+
+      const isTriggered = megawatts >= rules.transmissionServiceThreshold_MW;
+      const totalGridUpgradeCost = megawatts * utility.estimatedGridUpgradeCostPerMW;
+      const developerShare = isTriggered
+        ? totalGridUpgradeCost
+        : totalGridUpgradeCost * rules.subThresholdDeveloperShare;
+      const ratepayerShare = totalGridUpgradeCost - developerShare;
+      const annualPpaCost = isTriggered
+        ? megawatts * (rules.minZeroCarbonLoadMatchPercent / 100) * rules.assumedAnnualPpaCostPerMatchedMW
+        : 0;
+      const total15YearPpaCost = annualPpaCost * rules.minZeroCarbonContractYears;
+
+      return { isTriggered, totalGridUpgradeCost, developerShare, ratepayerShare, total15YearPpaCost };
+    }
+
+    function calculateCEQATimeline(coolingType, uses100PercentCleanEnergy, prefundsGridUpgrades) {
+      const rules = baselines.legislativeTriggers.SB887;
+      let timelineMonths = rules.standardCeqaLitigationMonths;
+      let status = 'Standard CEQA review timeline (modeled baseline)';
+      let statusColor = 'text-amber-700';
+      let qualifiesForEldp = false;
+      const avoidsPotableWater = coolingType !== 'Evaporative Open-Loop';
+
+      if (avoidsPotableWater && uses100PercentCleanEnergy && prefundsGridUpgrades) {
+        timelineMonths = rules.eldpAcceleratedReviewMonths;
+        status = 'Shorter timeline in this scenario when water, clean power, and size conditions align';
+        statusColor = 'text-emerald-700';
+        qualifiesForEldp = true;
+      } else if (!avoidsPotableWater) {
+        timelineMonths += rules.evaporativeCoolingPenaltyMonths;
+        status = 'Longer timeline in this scenario: open-loop evaporative cooling adds 12 months';
+        statusColor = 'text-rose-700';
+      }
+
+      return { timelineMonths, status, statusColor, qualifiesForEldp };
+    }
+
+    function calculateAB1577Burden(megawatts) {
+      const kilowatts = megawatts * 1000;
+      const threshold = baselines.legislativeTriggers.AB1577.minThreshold_kW;
+      const isTriggered = kilowatts >= threshold;
+      return {
+        isTriggered,
+        reportingCadence: isTriggered ? 'Modeled: monthly disclosure' : 'Below modeled threshold',
+        metricsRequired: isTriggered ? baselines.legislativeTriggers.AB1577.mandatoryMetrics : [],
+      };
+    }
+
+    function getThresholdHints(megawatts) {
+      if (megawatts < 0.5) {
+        return ['Below 0.5 MW: the AB 1577 style disclosure scenario does not apply in this model.'];
+      }
+      if (megawatts < 25) {
+        return ['Above 0.5 MW: the AB 1577 style disclosure scenario applies. Below 25 MW: the SB 886 style scenario uses a 75% developer share for upgrade costs.'];
+      }
+      return [
+        'At or above 25 MW: the SB 886 style scenario assigns the full illustrative upgrade share to the developer.',
+        'The AB 1577 style disclosure scenario also applies at this size.',
+      ];
+    }
+
+    const STATUS_STYLES = {
+      modeled: 'bg-stone-100 text-stone-700 border-stone-300',
+      proposed: 'bg-amber-50 text-amber-800 border-amber-200',
+      enacted: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    };
+
+    function StatusBadge({ status }) {
+      const label = status === 'modeled' ? 'Modeled scenario' : status === 'proposed' ? 'Proposed (verify status)' : 'Enacted (verify text)';
+      return (
+        <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded border ${STATUS_STYLES[status] || STATUS_STYLES.modeled}`}>
+          {label}
+        </span>
+      );
+    }
+
+    function FieldHelp({ what, why }) {
+      return (
+        <div className="text-xs text-stone-500 space-y-1 mt-2 bg-stone-50 border border-stone-100 rounded-md p-2.5">
+          <p><span className="font-semibold text-stone-600">What this is:</span> {what}</p>
+          <p><span className="font-semibold text-stone-600">Why it matters:</span> {why}</p>
+        </div>
+      );
+    }
+
+    function OutputHelp({ what, why }) {
+      return (
+        <div className="text-xs text-stone-500 space-y-1 mt-2 border-t border-stone-100 pt-2">
+          <p><span className="font-semibold text-stone-600">What you are seeing:</span> {what}</p>
+          <p>{why}</p>
+        </div>
+      );
+    }
+
+    function App() {
+      const [megawatts, setMegawatts] = useState(30);
+      const [utilityCode, setUtilityCode] = useState('PGE');
+      const [coolingType, setCoolingType] = useState('Closed-Loop Air Cooled');
+      const [prefundCleanEnergy, setPrefundCleanEnergy] = useState(true);
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [showDisclosureDraft, setShowDisclosureDraft] = useState(false);
+      const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+      const [introDismissed, setIntroDismissed] = useState(false);
+
+      const sb886Results = useMemo(() => calculateSB886Tariff(megawatts, utilityCode), [megawatts, utilityCode]);
+      const ceqaResults = useMemo(() => calculateCEQATimeline(coolingType, prefundCleanEnergy, megawatts >= 25), [coolingType, prefundCleanEnergy, megawatts]);
+      const ab1577Results = useMemo(() => calculateAB1577Burden(megawatts), [megawatts]);
+      const thresholdHints = useMemo(() => getThresholdHints(megawatts), [megawatts]);
+
+      const formatCurrency = (val) => {
+        if (val == null || Number.isNaN(val)) return 'N/A';
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+      };
+      const formatMW = (mw) => (mw % 1 === 0 ? String(mw) : mw.toFixed(1));
+
+      const loadExample = () => {
+        setMegawatts(30);
+        setUtilityCode('PGE');
+        setCoolingType('Closed-Loop Air Cooled');
+        setPrefundCleanEnergy(true);
+      };
+
+      const tabs = [
+        { id: 'dashboard', label: 'Try a scenario' },
+        { id: 'policy', label: 'What inspired this' },
+        { id: 'methodology', label: 'How we calculated it' },
+      ];
+
+      return (
+        <div className="flex-1 flex flex-col min-h-screen bg-stone-50">
+          {!disclaimerDismissed && (
+            <div className="no-print bg-amber-50 border-b border-amber-200 px-4 py-3" role="note">
+              <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-start gap-3 justify-between">
+                <p className="text-sm text-amber-950 leading-relaxed">
+                  <strong>Heads up:</strong> {baselines.metadata.disclaimer} When you see <strong>Modeled scenario</strong>, we are running a what-if, not stating current law. Check official sources before making decisions.
+                </p>
+                <button
+                  onClick={() => setDisclaimerDismissed(true)}
+                  className="shrink-0 text-xs font-semibold text-amber-900 underline hover:no-underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
+
+          <header className="no-print bg-white border-b border-stone-200 px-6 py-5">
+            <div className="max-w-6xl mx-auto flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1">California energy and siting</p>
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+                  Data Center Siting Model
+                </h1>
+                <p className="text-sm text-stone-600 mt-1 max-w-2xl">
+                  Pick a facility size, utility territory, and cooling setup. See how illustrative grid costs, permitting time, and reporting burdens change under simplified policy scenarios.
+                </p>
+              </div>
+              <nav className="flex flex-wrap gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                      activeTab === tab.id ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </header>
+
+          {activeTab === 'dashboard' && (
+            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
+              <div className="print-only mb-4 border-b border-stone-300 pb-4">
+                <h1 className="font-serif text-2xl font-bold text-stone-900">Scenario summary</h1>
+                <p className="text-sm text-stone-600 mt-1">
+                  {formatMW(megawatts)} MW · {baselines.utilityBaselines[utilityCode]?.name || utilityCode} · {coolingType}
+                </p>
+              </div>
+
+              {!introDismissed && (
+                <div className="no-print bg-white border border-stone-200 rounded-lg p-5 shadow-sm">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="space-y-3">
+                      <h2 className="font-semibold text-stone-900">How to use this tool</h2>
+                      <p className="text-sm text-stone-600 leading-relaxed">{baselines.metadata.modeledScenarioDefinition}</p>
+                      <ol className="text-sm text-stone-600 list-decimal pl-5 space-y-1">
+                        <li>Set facility size with the slider (try 0.4 MW vs 30 MW to see thresholds).</li>
+                        <li>Choose a utility territory and cooling approach.</li>
+                        <li>Read the three result blocks: grid costs, permitting timeline, and disclosure.</li>
+                        <li>Open <strong>How we calculated it</strong> for formulas and assumptions.</li>
+                      </ol>
+                      <button onClick={loadExample} className="text-xs font-semibold text-stone-700 border border-stone-300 bg-stone-50 hover:bg-stone-100 px-3 py-1.5 rounded-md">Load a typical 30 MW example</button>
+                    </div>
+                    <button onClick={() => setIntroDismissed(true)} className="shrink-0 text-xs font-semibold text-stone-500 underline hover:no-underline">Dismiss</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <section className="no-print lg:col-span-1 bg-white border border-stone-200 rounded-lg p-5 h-fit space-y-5 shadow-sm">
+                <div>
+                  <h2 className="text-base font-semibold text-stone-900">Your facility inputs</h2>
+                  <p className="text-xs text-stone-500 mt-1">Move the slider and options, then read what changed on the right.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-stone-700 font-medium">How big is the facility?</span>
+                    <span className="font-mono text-sm font-semibold text-stone-900 bg-stone-100 px-2 py-0.5 rounded">{formatMW(megawatts)} MW</span>
+                  </div>
+                  <input
+                    type="range" min="0.1" max="150" step="0.1" value={megawatts}
+                    onChange={(e) => setMegawatts(Number(e.target.value))}
+                    className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-700"
+                  />
+                  <div className="flex justify-between text-[10px] text-stone-500 font-mono">
+                    <span>0.1 MW</span>
+                    <span>0.5 MW</span>
+                    <span>25 MW</span>
+                    <span>150 MW</span>
+                  </div>
+                  <FieldHelp
+                    what="Facility capacity in megawatts (MW). One MW equals 1,000 kilowatts."
+                    why="Size triggers different parts of our scenarios. Small sites face different reporting rules than large loads that stress the grid."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-stone-700 block">Where would it connect?</label>
+                  <select
+                    value={utilityCode}
+                    onChange={(e) => setUtilityCode(e.target.value)}
+                    className="w-full bg-white border border-stone-300 rounded-md p-2.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400"
+                  >
+                    <option value="PGE">PG&E (Northern California)</option>
+                    <option value="SDGE">SDG&E (San Diego)</option>
+                    <option value="SCE">SCE (Southern California)</option>
+                  </select>
+                  <p className="text-xs text-stone-500 leading-relaxed bg-stone-50 p-2.5 rounded border border-stone-100">
+                    {baselines.utilityBaselines[utilityCode].regionalBrief}
+                  </p>
+                  <FieldHelp
+                    what="Which investor-owned utility territory the project would sit in."
+                    why="Our model uses one illustrative cost-per-MW placeholder per territory. Real interconnection costs depend on substation, voltage, and study results."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-stone-700 block">How would you cool it?</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { id: 'Evaporative Open-Loop', desc: 'Uses more water. In our CEQA scenario, this can add permitting time.' },
+                      { id: 'Closed-Loop Air Cooled', desc: 'Saves water but uses more electricity for cooling.' },
+                      { id: 'Direct-to-Chip Liquid', desc: 'Low water loss. Often used for dense computing loads.' },
+                    ].map((cooling) => (
+                      <button
+                        key={cooling.id}
+                        onClick={() => setCoolingType(cooling.id)}
+                        className={`text-left p-3 rounded-md border text-xs transition ${
+                          coolingType === cooling.id
+                            ? 'bg-stone-100 border-stone-400 text-stone-900'
+                            : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'
+                        }`}
+                      >
+                        <span className="font-semibold block">{cooling.id}</span>
+                        <span className="text-stone-500 mt-0.5 block">{cooling.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <FieldHelp
+                    what="The on-site cooling technology for the data center."
+                    why="Water use affects our simplified CEQA timeline scenario. Utilities and water districts may raise separate issues not captured here."
+                  />
+                </div>
+
+                <div className="pt-3 border-t border-stone-200">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={prefundCleanEnergy}
+                      onChange={(e) => setPrefundCleanEnergy(e.target.checked)}
+                      className="mt-0.5 rounded border-stone-300"
+                    />
+                    <span>
+                      <span className="text-sm font-medium text-stone-800 block">Commit to long-term clean power (15 years, modeled)</span>
+                      <span className="text-xs text-stone-500">Affects SB 886 style energy cost estimates and SB 887 style timeline inputs in this tool.</span>
+                    </span>
+                  </label>
+                </div>
+              </section>
+
+              <section className="lg:col-span-2 print:col-span-full space-y-5">
+                {thresholdHints.length > 0 && (
+                  <div className="no-print bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-800 mb-2">What changed at this size</p>
+                    <ul className="text-sm text-blue-900 space-y-1 list-disc pl-5">
+                      {thresholdHints.map((hint) => <li key={hint}>{hint}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="no-print bg-white border border-stone-200 rounded-lg p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-2">California grid context (rounded references)</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    {[
+                      { label: 'Est. load 2026', value: `${baselines.gridForecasts.currentLoad2026_MW.toLocaleString()} MW` },
+                      { label: 'Est. load 2030', value: `${baselines.gridForecasts.projectedLoad2030_MW.toLocaleString()} MW` },
+                      { label: 'Est. load 2040', value: `${baselines.gridForecasts.projectedLoad2040_MW.toLocaleString()} MW` },
+                      { label: 'Queue pipeline', value: `${baselines.gridForecasts.activeQueuePipeline_MW.toLocaleString()} MW` },
+                    ].map((item) => (
+                      <div key={item.label} className="bg-stone-50 rounded-md border border-stone-100 px-2 py-2">
+                        <p className="text-[10px] text-stone-500">{item.label}</p>
+                        <p className="text-sm font-semibold font-mono text-stone-800">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-stone-400 mt-2">Rounded illustrative values for siting context. Not live CAISO or CEC data.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm">
+                    <div className="flex items-center gap-2 mb-1"><StatusBadge status="modeled" /><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Grid upgrade (SB 886 style)</p></div>
+                    <p className="text-2xl font-bold text-stone-900 mt-2 font-mono">{formatCurrency(sb886Results?.developerShare)}</p>
+                    <p className="text-xs text-stone-500 mt-1">Illustrative developer share in this scenario</p>
+                    <OutputHelp
+                      what="A rough index of upgrade costs assigned to the developer in our simplified model."
+                      why={sb886Results?.isTriggered ? 'At 25 MW and above, this scenario assigns the full placeholder upgrade cost to the developer.' : 'Below 25 MW, the developer pays 75% of the placeholder cost in this scenario. The rest is attributed to ratepayers for comparison only.'}
+                    />
+                  </div>
+                  <div className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm">
+                    <div className="flex items-center gap-2 mb-1"><StatusBadge status="modeled" /><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Permitting timeline (SB 887 style)</p></div>
+                    <p className="text-2xl font-bold text-stone-900 mt-2 font-mono">
+                      {ceqaResults.timelineMonths} <span className="text-sm font-sans font-medium text-stone-500">months</span>
+                    </p>
+                    <p className={`text-xs mt-1 ${ceqaResults.statusColor}`}>{ceqaResults.status}</p>
+                    <OutputHelp
+                      what="A simplified permitting timeline in months. Not a schedule promise."
+                      why="CEQA is run by local lead agencies, not utilities. This block compares cooling and clean-power choices under a hypothetical timeline scenario."
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm space-y-5">
+                  <div className="flex justify-between items-center border-b border-stone-200 pb-3">
+                    <h3 className="font-semibold text-stone-900">Full scenario breakdown</h3>
+                    <button
+                      onClick={() => window.print()}
+                      className="no-print text-xs font-semibold text-stone-700 border border-stone-300 bg-stone-50 hover:bg-stone-100 px-3 py-1.5 rounded-md"
+                    >
+                      Export scenario summary
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge status={baselines.legislativeTriggers.SB886.status} />
+                      <h4 className="text-sm font-semibold text-stone-800">Grid cost allocation (SB 886 style)</h4>
+                    </div>
+                    <div className="bg-stone-50 rounded-md border border-stone-100 p-4 font-mono text-sm space-y-2">
+                      <div className="flex justify-between"><span className="text-stone-500 text-xs">Total placeholder upgrade cost</span><span>{formatCurrency(sb886Results?.totalGridUpgradeCost)}</span></div>
+                      <div className="flex justify-between"><span className="text-stone-500 text-xs">Illustrative ratepayer share</span><span className={sb886Results?.ratepayerShare > 0 ? 'text-rose-700 font-semibold' : ''}>{sb886Results?.ratepayerShare > 0 ? formatCurrency(sb886Results?.ratepayerShare) : '$0 in this scenario'}</span></div>
+                      <div className="flex justify-between"><span className="text-stone-500 text-xs">15-year modeled clean-energy cost</span><span>{formatCurrency(sb886Results?.total15YearPpaCost)}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge status={baselines.legislativeTriggers.AB1577.status} />
+                      <h4 className="text-sm font-semibold text-stone-800">Operational disclosure (AB 1577 style)</h4>
+                    </div>
+                    <div className={`p-4 rounded-md border text-sm ${ab1577Results.isTriggered ? 'bg-amber-50/50 border-amber-200' : 'bg-stone-50 border-stone-100'}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-stone-600 text-xs">Reporting in this scenario</span>
+                        <span className="font-mono text-xs font-semibold text-stone-800">{ab1577Results.reportingCadence}</span>
+                      </div>
+                      {ab1577Results.isTriggered && (
+                        <div className="mt-3 pt-3 border-t border-stone-200 space-y-2">
+                          <p className="text-xs text-stone-500">Metrics included in this scenario:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {ab1577Results.metricsRequired.map((metric) => (
+                              <span key={metric} className="text-[10px] font-mono bg-white border border-stone-200 px-2 py-1 rounded">{metric}</span>
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => setShowDisclosureDraft(!showDisclosureDraft)}
+                            className="no-print text-xs font-semibold text-stone-700 underline hover:no-underline"
+                          >
+                            {showDisclosureDraft ? 'Hide draft worksheet' : 'Preview draft worksheet'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {showDisclosureDraft && ab1577Results.isTriggered && (
+                    <div className="bg-stone-50 border border-stone-200 rounded-md p-4 font-mono text-[11px] text-stone-600 space-y-3">
+                      <div className="flex justify-between border-b border-stone-200 pb-2 text-stone-800">
+                        <span>Draft disclosure worksheet (illustrative)</span>
+                        <span>Not for filing</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>Capacity: <span className="text-stone-900">{formatMW(megawatts)} MW</span></div>
+                        <div>Period: <span className="text-stone-900">June 2026 (example)</span></div>
+                        <div>Territory: <span className="text-stone-900">{utilityCode}</span></div>
+                        <div>Cooling: <span className="text-stone-900">{coolingType}</span></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                  <div className="no-print bg-stone-100 border border-stone-200 rounded-lg p-5">
+                    <h3 className="text-sm font-semibold text-stone-800">What utilities actually do next (real process)</h3>
+                    <p className="text-xs text-stone-500 mt-1 mb-3">This model does not replace interconnection studies. In practice, a large load project typically moves through steps like these:</p>
+                    <ol className="text-sm text-stone-600 list-decimal pl-5 space-y-1">
+                      <li>Preliminary inquiry with the serving utility about point of interconnection.</li>
+                      <li>Application and deposit for feasibility or system impact studies.</li>
+                      <li>Facilities study defining required upgrades and cost allocation per applicable tariffs.</li>
+                      <li>Facilities agreement, construction, and energization in phases if needed.</li>
+                    </ol>
+                    <p className="text-xs text-stone-500 mt-3">Costs and timelines depend on location, load profile, and queue position. No utility has endorsed this tool.</p>
+                  </div>
+              </section>
+              </div>
+            </main>
+          )}
+
+          {activeTab === 'policy' && (
+            <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-8 space-y-6">
+              <div className="border-b border-stone-200 pb-4">
+                <h2 className="font-serif text-2xl font-bold text-stone-900">What policies inspired this</h2>
+                <p className="text-sm text-stone-600 mt-1 leading-relaxed">
+                  These summaries describe the <em>scenarios we encoded</em>, not current law. Bill numbers echo real debates in California. Always verify status and text at leginfo.legislature.ca.gov before citing them.
+                </p>
+              </div>
+
+              <div className="bg-white border border-stone-200 rounded-lg p-4">
+                <p className="text-sm text-stone-600"><strong>What is a modeled scenario?</strong> {baselines.metadata.modeledScenarioDefinition}</p>
+              </div>
+
+              {[
+                {
+                  key: 'SB886',
+                  title: 'Who pays for grid upgrades? (SB 886 style)',
+                  body: 'California has an active debate about whether large data centers should pay the full cost of grid upgrades they trigger, or whether some of that cost gets spread to other ratepayers. This scenario tests a simple version of the developer pays side at 25 MW and above.',
+                },
+                {
+                  key: 'SB887',
+                  title: 'How long might permitting take? (SB 887 style)',
+                  body: 'Environmental review (CEQA) timelines vary by project and lead agency. This scenario asks what might happen if water-heavy cooling added delay, while clean power and certain design choices shortened it. Utilities do not control CEQA clocks.',
+                },
+                {
+                  key: 'AB1577',
+                  title: 'What would operators have to report? (AB 1577 style)',
+                  body: 'Some policymakers have pushed for more transparency on data center energy use, waste heat, and backup generation. This scenario turns on monthly reporting above 500 kW (0.5 MW) in our model.',
+                },
+              ].map((item) => {
+                const rule = baselines.legislativeTriggers[item.key];
+                return (
+                  <article key={item.key} className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="font-semibold text-stone-900">{item.title}</h3>
+                      <StatusBadge status={rule.status} />
+                    </div>
+                    <p className="text-sm text-stone-600 leading-relaxed">{item.body}</p>
+                    <p className="text-xs text-stone-500 border-t border-stone-100 pt-2">{rule.statusNote}</p>
+                  </article>
+                );
+              })}
+
+              <article className="bg-stone-100 border border-stone-200 rounded-lg p-5">
+                <h3 className="text-sm font-semibold text-stone-800">Check primary sources</h3>
+                <p className="text-sm text-stone-600 mt-2 leading-relaxed">
+                  Use California Legislative Information for bill text, CPUC dockets for tariff and cost allocation, CEC for demand forecasts, and CAISO for interconnection queue data. This tool is a teaching aid, not an official filing.
+                </p>
+              </article>
+            </main>
+          )}
+
+          {activeTab === 'methodology' && (
+            <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-8 space-y-6">
+              <div className="border-b border-stone-200 pb-4">
+                <h2 className="font-serif text-2xl font-bold text-stone-900">How we calculated it</h2>
+                <p className="text-sm text-stone-600 mt-1">Formulas behind the scenario builder. Every dollar figure is a placeholder for comparison, not a quote from any utility or agency.</p>
+              </div>
+
+              <section className="bg-white border border-stone-200 rounded-lg p-5 space-y-3 shadow-sm">
+                <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h3 className="font-semibold text-stone-900">SB 886 style grid cost allocation</h3></div>
+                <ul className="text-sm text-stone-600 space-y-2 list-disc pl-5">
+                  <li><strong>Threshold:</strong> At 25 MW and above, the scenario assigns 100% of the placeholder upgrade cost to the developer.</li>
+                  <li><strong>Upgrade cost:</strong> <code className="text-xs bg-stone-100 px-1 rounded">MW x utility placeholder $/MW</code>. Territory placeholders: PG&E $250k, SDG&E $410k, SCE $180k per MW. Illustrative only.</li>
+                  <li><strong>Below 25 MW:</strong> Developer pays 75% of placeholder cost; 25% attributed to ratepayers for scenario comparison.</li>
+                  <li><strong>Clean energy:</strong> If triggered, annual cost = <code className="text-xs bg-stone-100 px-1 rounded">MW x 50% x $75,000</code>, summed over 15 years. Not a real PPA price.</li>
+                </ul>
+              </section>
+
+              <section className="bg-white border border-stone-200 rounded-lg p-5 space-y-3 shadow-sm">
+                <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h3 className="font-semibold text-stone-900">SB 887 style CEQA timeline</h3></div>
+                <ul className="text-sm text-stone-600 space-y-2 list-disc pl-5">
+                  <li><strong>Baseline:</strong> 36 months (standard review scenario).</li>
+                  <li><strong>Shorter path:</strong> 12 months when cooling is not open-loop evaporative, clean power is selected, and capacity is at least 25 MW.</li>
+                  <li><strong>Evaporative cooling:</strong> Adds 12 months to the baseline in this scenario.</li>
+                </ul>
+              </section>
+
+              <section className="bg-white border border-stone-200 rounded-lg p-5 space-y-3 shadow-sm">
+                <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h3 className="font-semibold text-stone-900">AB 1577 style disclosure</h3></div>
+                <ul className="text-sm text-stone-600 space-y-2 list-disc pl-5">
+                  <li><strong>Threshold:</strong> 500 kW (0.5 MW) facility capacity.</li>
+                  <li><strong>Above threshold:</strong> Modeled monthly disclosure of PUE, waste heat recovery, and backup-generation emissions.</li>
+                  <li><strong>Draft form:</strong> Illustrative worksheet only; not formatted for agency submission.</li>
+                </ul>
+              </section>
+
+              <section className="bg-white border border-stone-200 rounded-lg p-5 space-y-3 shadow-sm">
+                <h3 className="font-semibold text-stone-900">Known limitations</h3>
+                <ul className="text-sm text-stone-600 space-y-2 list-disc pl-5">
+                  <li>No site-specific substation or geography inputs.</li>
+                  <li>No load factor, phased buildout, or on-site generation.</li>
+                  <li>Utility cost placeholders are not from interconnection studies.</li>
+                  <li>CEQA and utility processes are separated in real life but linked here for teaching.</li>
+                </ul>
+              </section>
+
+              <section className="bg-white border border-stone-200 rounded-lg p-5 space-y-3 shadow-sm">
+                <h3 className="font-semibold text-stone-900">Data references (conceptual)</h3>
+                <ul className="text-sm text-stone-600 space-y-1 list-disc pl-5">
+                  {baselines.metadata.sources.map((s) => <li key={s}>{s}</li>)}
+                </ul>
+                <p className="text-xs text-stone-500 pt-2">Grid forecast figures in the data layer (e.g. 1,000 MW current load, 4,500 MW queue) are rounding references for context, not live API feeds.</p>
+              </section>
+            </main>
+          )}
+
+          <footer className="no-print mt-auto border-t border-stone-200 bg-white py-5 text-center text-xs text-stone-500">
+            <p>California Data Center Siting Model · Exploratory scenario tool · Updated {baselines.metadata.lastUpdated}</p>
+          </footer>
+        </div>
+      );
+    }
+
+    function mountApp() {
+      try {
+        if (typeof React === 'undefined') throw new Error('React is not available.');
+        if (typeof ReactDOM === 'undefined') throw new Error('ReactDOM is not available.');
+        if (typeof App !== 'function') throw new Error('App failed to compile. Check the browser console.');
+        const container = document.getElementById('root');
+        if (!container) throw new Error('Root element #root not found.');
+        ReactDOM.createRoot(container).render(<App />);
+      } catch (error) {
+        console.error(error);
+        if (typeof window.__showLoadError === 'function') window.__showLoadError(error.message || String(error));
+      }
+    }
+
+    mountApp();
+  </script>
+</body>
+</html>
