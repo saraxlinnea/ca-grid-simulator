@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Serve the siting model locally. Open http://localhost:8080/index.html
+# Serve the siting planner locally. Open http://localhost:8080/index.html
 cd "$(dirname "$0")"
 PORT="${1:-8080}"
 echo "Serving at http://localhost:${PORT}/index.html"

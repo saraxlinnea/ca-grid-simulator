@@ -2,3 +2,6 @@
 Thumbs.db
 *.log
 node_modules/
+
+# Local Cursor agent context (not for GitHub)
+AGENTS.md

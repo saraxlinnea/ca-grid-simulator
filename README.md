@@ -1,14 +1,14 @@
-# California Data Center Siting Model
+# California Data Center Siting Planner
 
 **Live demo:** [https://saraxlinnea.github.io/ca-grid-simulator/](https://saraxlinnea.github.io/ca-grid-simulator/)
 
-A single-page worksheet for California data center siting: rough grid cost splits, CEQA timeline guesses, and disclosure thresholds. Numbers are placeholders, not utility quotes.
+A free planning tool for California data center siting: compare illustrative grid cost splits, CEQA timeline guesses, and disclosure thresholds under bill-inspired scenarios. Numbers are placeholders, not utility quotes.
 
-![Try a scenario tab — facility inputs and illustrative results](docs/screenshot.png)
+![Try a scenario tab: facility inputs and results](docs/screenshot.png)
 
 ## About this project
 
-I put this together while reading California bills about data centers and grid upgrades. You set facility size, utility territory, and cooling type, then compare outputs under three **modeled scenarios** — simplified rules based on SB 886, SB 887, and AB 1577 debates, not the statutes themselves.
+I put this together while reading California bills about data centers and grid upgrades. Set facility size, utility territory, and cooling type, then compare outputs under three **modeled scenarios**: simplified rules based on SB 886, SB 887, and AB 1577 debates, not the statutes themselves.
 
 Not affiliated with PG&E, SCE, SDG&E, CPUC, CEC, or CAISO.
 
@@ -41,9 +41,8 @@ Hard refresh if you see a stale page: **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** 
 
 | Tab | What it does |
 |-----|----------------|
-| **Try a scenario** | Set facility inputs and read illustrative grid, permitting, and disclosure outputs |
-| **What inspired this** | Short notes on each bill scenario encoded in the model |
-| **How we calculated it** | Formulas, assumptions, limits, and links |
+| **Plan a site** | Set inputs, compare scenarios with presets, read the summary scorecard. Facility economics include per-input source notes; permitting delay feeds into upfront cost |
+| **How it works** | Bill context, real cost-allocation policy (SB 57, CPUC), background data, formulas, assumptions, and sources |
 
 ## Troubleshooting
 
@@ -51,7 +50,7 @@ Hard refresh if you see a stale page: **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** 
 |---------|-----|
 | `Connection refused` | Start the server first (`./start.sh`) and keep that terminal open |
 | Blank page | Hard refresh; check the browser console for CDN errors; confirm you have internet access |
-| Red error banner | Usually a blocked CDN script — try another network or disable strict blockers |
+| Red error banner | Usually a blocked CDN script. Try another network or disable strict blockers |
 
 ## Project layout
 
