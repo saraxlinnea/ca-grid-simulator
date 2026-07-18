@@ -77,11 +77,11 @@
         jurisdiction: 'California',
         lastUpdated: 'July 2026',
         disclaimer: 'Not legal, regulatory, or utility advice.',
-        topBarBriefing: 'A free planning tool that compares California data center siting tradeoffs under simplified bill-inspired scenarios (grid upgrades, permitting time, reporting). Numbers are illustrative.',
+        topBarBriefing: 'A free planning tool for California data center siting. Compare grid upgrade cost allocation, permitting timelines, and reporting under simplified bill-inspired scenarios. Numbers are illustrative estimates, not real bills or utility quotes.',
         appEyebrow: 'Planning tool · California',
         appTitle: 'California Data Center Siting Planner',
-        appSubtitle: 'Compare grid costs, permitting timelines, and reporting under three simplified bill-inspired scenarios. Illustrative numbers for planning, not quotes from utilities or agencies.',
-        modeledScenarioDefinition: 'Each scenario borrows ideas from real California bills, simplifies them, and runs the math. Useful for comparing options; not a statement of current law.',
+        appSubtitle: 'Set facility size, utility territory, and cooling. Compare grid upgrade cost allocation, permitting months, and disclosure under three bill-inspired scenarios. Figures are illustrative, not quotes from utilities or agencies.',
+        modeledScenarioDefinition: 'A modeled estimate borrows ideas from real California bills, simplifies them, and runs the math so you can compare options. It is not a statement of current law.',
         sources: [
           { label: 'CEC Integrated Energy Policy Report (demand forecast references)', url: 'https://www.energy.ca.gov/data-reports/reports/integrated-energy-policy-report' },
           { label: 'CAISO interconnection queue and planning', url: 'https://www.caiso.com/planning/Pages/GeneratorInterconnection/Default.aspx' },
@@ -785,7 +785,7 @@
           mw >= rules886.transmissionServiceThreshold_MW
             ? `At or above ${rules886.transmissionServiceThreshold_MW} MW: developer pays 100% = $${sb886?.developerShare.toLocaleString()}`
             : `Below ${rules886.transmissionServiceThreshold_MW} MW: developer pays 75% = $${sb886?.developerShare.toLocaleString()}, ratepayers $${sb886?.ratepayerShare.toLocaleString()}`,
-          'Grid upgrades cover substations, transformers, and lines to serve a new large load. Costs vary by site; these are teaching placeholders.',
+          'Grid upgrades cover substations, transformers, and lines to serve a new large load. Costs vary by site; these are illustrative placeholders.',
         ]},
         { label: 'SB 887 permitting (modeled months)', lines: [
           `Baseline in this model: ${rules887.standardCeqaLitigationMonths} months`,
@@ -824,8 +824,8 @@
     const MW_SLIDER_MAX = 150;
 
     const MW_POLICY_THRESHOLDS = [
-      { mw: 0.5, label: '0.5 MW', note: 'AB 1577 disclosure' },
-      { mw: 25, label: '25 MW', note: 'SB 886 grid split' },
+      { mw: 0.5, label: '0.5 MW', note: 'reporting turns on' },
+      { mw: 25, label: '25 MW', note: 'full developer cost share' },
     ];
 
     function getSizeExample(megawatts) {
@@ -840,11 +840,24 @@
     };
 
     function StatusBadge({ status }) {
-      const label = status === 'modeled' ? 'Modeled scenario' : status === 'proposed' ? 'Proposed (verify status)' : 'Enacted (verify text)';
+      const label = status === 'modeled' ? 'Modeled estimate' : status === 'proposed' ? 'Proposed (check status)' : 'Enacted (check text)';
       return (
         <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded border ${STATUS_STYLES[status] || STATUS_STYLES.modeled}`}>
           {label}
         </span>
+      );
+    }
+
+    function GlossaryTip({ title, children }) {
+      return (
+        <details className="mt-1.5 text-xs">
+          <summary className="cursor-pointer text-stone-600 hover:text-stone-800 list-none inline-flex items-center gap-1 font-medium">
+            <span className="underline decoration-dotted">{title}</span>
+          </summary>
+          <div className="mt-1.5 bg-stone-50 border border-stone-100 rounded-md p-2.5 leading-relaxed text-stone-600 space-y-1.5">
+            {children}
+          </div>
+        </details>
       );
     }
 
@@ -859,7 +872,7 @@
       strong: 'Strong evidence',
       moderate: 'Moderate evidence',
       weak: 'Weak evidence',
-      speculative: 'Speculative',
+      speculative: 'Illustrative',
     };
 
     const EVIDENCE_HINTS = {
@@ -1106,7 +1119,8 @@
             <text x={10} y={height / 2} textAnchor="middle" transform={`rotate(-90 10 ${height / 2})`} className="fill-stone-400 text-[9px]">Billion kWh</text>
           </svg>
           <p className="text-[10px] text-stone-400">
-            US retail electricity sales. Y-axis starts at 3,650 billion kWh to show the trend. 2020 dip partly reflects COVID-era demand.{' '}
+            Each year, how much electricity did US homes and businesses buy? A higher line means more electricity.{' '}
+            Y-axis starts at 3,650 billion kWh so the trend is easier to see. The 2020 dip partly reflects COVID-era demand.{' '}
             <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600">{sourceLabel}</a>
           </p>
         </div>
@@ -1227,19 +1241,20 @@
         const disclosureLabel = ab1577Results.isTriggered ? 'Monthly reporting' : 'No reporting';
         let narrative = '';
         if (megawatts < 0.5) {
-          narrative = 'Below 0.5 MW: AB 1577 style disclosure does not apply in this model.';
+          narrative = 'Below 0.5 MW, monthly disclosure does not apply in this model.';
         } else if (megawatts < 25) {
-          narrative = 'Above 0.5 MW: disclosure applies. Below 25 MW: developer pays 75% of placeholder grid upgrades.';
+          narrative = 'Disclosure applies. Below 25 MW, the developer pays 75% of the modeled grid upgrade cost; other customers (ratepayers) cover the rest.';
         } else if (ceqaResults.timelineMonths === 12) {
-          narrative = 'At or above 25 MW: full grid upgrade on developer. Fast-path permitting in this scenario when water, clean power, and size align.';
+          narrative = 'At or above 25 MW, the developer pays the full modeled grid upgrade cost. Permitting follows the faster modeled path when cooling, clean power, and size align.';
         } else {
-          narrative = 'At or above 25 MW: full grid upgrade on developer. AB 1577 style reporting also applies.';
+          narrative = 'At or above 25 MW, the developer pays the full modeled grid upgrade cost. Monthly disclosure also applies.';
         }
         return { disclosureLabel, narrative };
       }, [megawatts, ab1577Results.isTriggered, ceqaResults.timelineMonths]);
 
       const tabs = [
         { id: 'plan', label: 'Plan a site' },
+        { id: 'background', label: 'Background' },
         { id: 'how-it-works', label: 'How it works' },
       ];
 
@@ -1297,6 +1312,10 @@
                 </p>
               </div>
 
+              <div className="no-print text-sm text-stone-600 bg-white border border-stone-200 rounded-lg px-3 py-2">
+                Adjust size and options below. The summary updates with <strong>grid upgrade cost to the project</strong>, <strong>permitting months</strong>, and <strong>disclosure</strong>.
+              </div>
+
               <div className="no-print sticky top-0 z-10 bg-stone-50/95 backdrop-blur border border-stone-200 rounded-lg p-3 shadow-sm space-y-2">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                   <span className="font-semibold text-stone-900">{formatMW(megawatts)} MW</span>
@@ -1307,7 +1326,7 @@
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
                   <div className="bg-white border border-stone-200 rounded-md px-2 py-1.5">
-                    <p className="text-[10px] uppercase tracking-wide text-stone-500">Grid (dev. share)</p>
+                    <p className="text-[10px] uppercase tracking-wide text-stone-500">Grid upgrade (developer)</p>
                     <p className="font-mono font-semibold text-stone-900 text-sm">{formatCurrency(sb886Results?.developerShare)}</p>
                   </div>
                   <div className="bg-white border border-stone-200 rounded-md px-2 py-1.5">
@@ -1320,6 +1339,11 @@
                   </div>
                 </div>
                 <p className="text-xs text-stone-600 leading-relaxed">{scenarioSummary.narrative}</p>
+                {energyScale && (
+                  <p className="text-[10px] text-stone-500">
+                    Rough electricity use: about <strong>{formatNumber(energyScale.homesEquivalent)}</strong> average US homes per year at current load factor and PUE.
+                  </p>
+                )}
               </div>
 
               <div className="no-print flex flex-wrap gap-1.5">
@@ -1347,7 +1371,7 @@
               <section className="no-print lg:col-span-1 bg-white border border-stone-200 rounded-lg p-4 h-fit space-y-4 shadow-sm">
                 <div>
                   <h2 className="text-base font-semibold text-stone-900">Your facility inputs</h2>
-                  <p className="text-xs text-stone-500 mt-1">Adjust inputs on the left; results update on the right.</p>
+                  <p className="text-xs text-stone-500 mt-1">Change inputs on the left; results update on the right.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -1365,17 +1389,13 @@
                       <span>{MW_SLIDER_MIN} MW</span>
                       <span>{MW_SLIDER_MAX} MW</span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] text-stone-500">
                       {MW_POLICY_THRESHOLDS.map((threshold) => (
                         <span
                           key={threshold.mw}
-                          className={`text-[10px] px-2 py-0.5 rounded border ${
-                            megawatts >= threshold.mw
-                              ? 'bg-blue-50 border-blue-200 text-blue-900'
-                              : 'bg-stone-50 border-stone-200 text-stone-500'
-                          }`}
+                          className={megawatts >= threshold.mw ? 'text-stone-800 font-medium underline decoration-stone-300 underline-offset-2' : ''}
                         >
-                          <span className="font-mono font-semibold">{threshold.label}</span>
+                          <span className="font-mono">{threshold.label}</span>
                           <span className="text-stone-400"> · </span>
                           {threshold.note}
                         </span>
@@ -1403,8 +1423,11 @@
                     )}
                   </div>
                   <FieldHelp>
-                    The number above is your current size. Blue threshold pills light up when your facility meets that modeled rule. Most of the slider range is above 25 MW because large campuses are the focus of these policy debates.
+                    Threshold markers highlight when your size crosses a rule in this model (disclosure at 0.5 MW; developer pays the full modeled upgrade cost at 25 MW).
                   </FieldHelp>
+                  <GlossaryTip title="What does MW mean?">
+                    <p><strong>Megawatt (MW)</strong> measures how much electric power a facility can draw at once. One MW equals 1,000 kilowatts. A mid-size campus often lands around 30 MW; very large sites can exceed 100 MW.</p>
+                  </GlossaryTip>
                 </div>
 
                 <div className="space-y-2">
@@ -1422,15 +1445,18 @@
                     {baselines.utilityBaselines[utilityCode].regionalBrief}
                   </p>
                   <FieldHelp>
-                    Investor-owned utility territory. The model uses one placeholder $/MW per territory; real interconnection costs depend on substation, voltage, and study results.
+                    Investor-owned utility territory. The model uses one illustrative $/MW placeholder per territory.
                   </FieldHelp>
+                  <GlossaryTip title="What does this mean?">
+                    <p>PG&E, SCE, and SDG&E deliver electricity in different parts of California. Real interconnection costs depend on the local substation, voltage, and utility study results. Figures here are not quotes.</p>
+                  </GlossaryTip>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-stone-700 block">How would you cool it?</label>
                   <div className="grid grid-cols-1 gap-2">
                     {[
-                      { id: 'Evaporative Open-Loop', desc: 'Uses more water. In the CEQA scenario, this can add permitting time.' },
+                      { id: 'Evaporative Open-Loop', desc: 'Uses more water. In the modeled CEQA timeline, this can add months.' },
                       { id: 'Closed-Loop Air Cooled', desc: 'Saves water but uses more electricity for cooling.' },
                       { id: 'Direct-to-Chip Liquid', desc: 'Low water loss. Often used for dense computing loads.' },
                     ].map((cooling) => (
@@ -1449,8 +1475,11 @@
                     ))}
                   </div>
                   <FieldHelp>
-                    On-site cooling choice. Open-loop evaporative cooling adds months in the SB 887 timeline scenario. Water districts may raise separate issues this model does not cover.
+                    Cooling choice affects water use and the modeled CEQA timeline.
                   </FieldHelp>
+                  <GlossaryTip title="What does this mean?">
+                    <p>Open-loop evaporative cooling uses more water and adds months in this model. Water districts and air permits can raise separate issues not captured here.</p>
+                  </GlossaryTip>
                 </div>
 
                 <div className="pt-3 border-t border-stone-200">
@@ -1463,9 +1492,12 @@
                     />
                     <span>
                       <span className="text-sm font-medium text-stone-800 block">Commit to long-term clean power (15 years, modeled)</span>
-                      <span className="text-xs text-stone-500">Affects SB 887 style timeline inputs. Modeled PPA costs appear at 25 MW and above in the SB 886 breakdown.</span>
+                      <span className="text-xs text-stone-500">Affects the modeled permitting timeline. Clean-energy cost estimates appear at 25 MW and above in the SB 886 breakdown.</span>
                     </span>
                   </label>
+                  <GlossaryTip title="What is clean power here?">
+                    <p>A long-term commitment to low-carbon electricity (often via a power purchase agreement). In this model it can unlock the shorter permitting path and add a clean-energy cost line at 25 MW and above.</p>
+                  </GlossaryTip>
                 </div>
               </section>
 
@@ -1475,10 +1507,10 @@
                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <StatusBadge status="modeled" />
                       <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Grid (SB 886)</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Grid upgrade (SB 886)</p>
                     </div>
                     <p className="text-xl font-bold text-stone-900 font-mono">{formatCurrency(sb886Results?.developerShare)}</p>
-                    <p className="text-[10px] text-stone-500 mt-0.5">Developer share</p>
+                    <p className="text-[10px] text-stone-500 mt-0.5">Developer share (modeled)</p>
                   </div>
                   <div className="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
@@ -1500,27 +1532,33 @@
                   </div>
                 </div>
 
-                <CollapsibleSection title="Why these numbers? (grid, permitting, disclosure)">
+                <CollapsibleSection title="Why these numbers?">
                   <div className="space-y-3 text-sm text-stone-600">
                     <p>
-                      <strong className="text-stone-800">Grid:</strong>{' '}
+                      <strong className="text-stone-800">Grid upgrade (developer share):</strong>{' '}
                       {sb886Results?.isTriggered
-                        ? 'At 25 MW and above, the SB 886 scenario assigns the full placeholder upgrade cost to the developer.'
-                        : 'Below 25 MW, the developer pays 75% of the placeholder cost; the rest goes to ratepayers in this scenario.'}
-                      {' '}At {formatMW(megawatts)} MW on {baselines.utilityBaselines[utilityCode]?.name || utilityCode}, placeholder total is {formatCurrency(sb886Results?.totalGridUpgradeCost)}.
+                        ? 'At 25 MW and above, this scenario assigns the full modeled upgrade cost to the developer.'
+                        : 'Below 25 MW, the developer pays 75% of the modeled cost; ratepayers cover the rest.'}
+                      {' '}At {formatMW(megawatts)} MW on {baselines.utilityBaselines[utilityCode]?.name || utilityCode}, the modeled total is {formatCurrency(sb886Results?.totalGridUpgradeCost)}.
                     </p>
+                    <GlossaryTip title="What is a grid upgrade?">
+                      <p>Equipment and construction needed to connect a large new load to the utility system: transformers, substation work, and sometimes new lines. This is <strong>not</strong> the same as a residential monthly electric bill. The dollar figure is an illustrative placeholder for who pays under the SB 886-style rule.</p>
+                    </GlossaryTip>
                     <p>
                       <strong className="text-stone-800">Permitting:</strong>{' '}
                       {ceqaResults.timelineMonths === 12
-                        ? '12 months is the modeled fast path when cooling avoids open-loop water, clean power is on, and size is at least 25 MW.'
+                        ? '12 months is the modeled fast path when cooling avoids open-loop water, clean power is on, and size is at least 25 MW. Not a real legal deadline.'
                         : ceqaResults.timelineMonths === 48
-                          ? '48 months = 36 month baseline plus 12 months for open-loop evaporative cooling.'
-                          : '36 months is the modeled baseline. Real CEQA timelines vary by lead agency.'}
+                          ? '48 months = 36 month modeled baseline plus 12 months for open-loop evaporative cooling.'
+                          : '36 months is the modeled baseline. Real CEQA (California environmental review) timelines vary by lead agency and can take longer.'}
                     </p>
+                    <GlossaryTip title="Why 12 months?">
+                      <p>Real CEQA reviews often take years. In this model, 12 months is a simplified fast path if certain conditions are met. It is not a statutory CEQA clock.</p>
+                    </GlossaryTip>
                     <p>
                       <strong className="text-stone-800">Disclosure:</strong>{' '}
                       {ab1577Results.isTriggered
-                        ? 'Above 0.5 MW (500 kW), this scenario requires monthly PUE, waste heat, and backup emissions reporting.'
+                        ? 'Above 0.5 MW (500 kW), this scenario requires monthly reporting of PUE, waste heat recovery, and backup-generation emissions.'
                         : 'Below 0.5 MW, AB 1577 style disclosure does not apply in this model.'}
                     </p>
                     <button
@@ -1528,7 +1566,7 @@
                       onClick={() => setActiveTab('how-it-works')}
                       className="text-xs font-semibold text-stone-700 underline hover:no-underline"
                     >
-                      Read bill context and formulas →
+                      Bill context and formulas →
                     </button>
                   </div>
                 </CollapsibleSection>
@@ -1843,36 +1881,130 @@
             </main>
           )}
 
+          {activeTab === 'background' && (
+            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-4">
+              <div className="border-b border-stone-200 pb-4">
+                <h2 className="font-serif text-2xl font-bold text-stone-900">Background</h2>
+                <p className="text-sm text-stone-600 mt-1 leading-relaxed max-w-3xl">
+                  Cloud market context and US electricity trends that frame why data center siting matters for the grid and for ratepayers.
+                </p>
+                <nav className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+                  <button type="button" onClick={() => setActiveTab('plan')} className="underline text-stone-700 hover:text-stone-900">← Plan a site</button>
+                  <button type="button" onClick={() => setActiveTab('how-it-works')} className="underline text-stone-700 hover:text-stone-900">How it works →</button>
+                </nav>
+              </div>
+
+              <section className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold text-stone-900 text-sm">Top cloud infrastructure providers (global)</h3>
+                  <EvidenceBadge level="moderate" />
+                </div>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  Market share of cloud infrastructure services (IaaS, PaaS, hosted private cloud), Q4 2024. Hyperscalers operate or lease large campuses; colocation providers rent space, power, and cooling to tenants.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead>
+                      <tr className="border-b border-stone-200 text-xs text-stone-500">
+                        <th className="py-2 pr-3 font-semibold">#</th>
+                        <th className="py-2 pr-3 font-semibold">Company</th>
+                        <th className="py-2 pr-3 font-semibold">Type</th>
+                        <th className="py-2 font-semibold text-right">Share</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-stone-700">
+                      {baselines.industryContext.cloudProviders.map((row) => (
+                        <tr key={row.rank} className="border-b border-stone-100">
+                          <td className="py-2 pr-3 font-mono text-xs">{row.rank}</td>
+                          <td className="py-2 pr-3">{row.name}</td>
+                          <td className="py-2 pr-3 text-xs text-stone-500">{row.type}</td>
+                          <td className="py-2 text-right font-mono text-xs">{row.marketSharePercent != null ? `${row.marketSharePercent}%` : row.note || 'n/a'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-stone-400">
+                  Source:{' '}
+                  <a href={baselines.industryContext.synergyResearchUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600">{baselines.industryContext.synergyResearchLabel}</a>
+                </p>
+                <details className="text-sm text-stone-600 border-t border-stone-100 pt-3">
+                  <summary className="font-semibold text-stone-800 cursor-pointer">What is a hyperscaler? What is colocation?</summary>
+                  <div className="mt-2 space-y-2 text-sm leading-relaxed">
+                    <p><strong>Hyperscaler:</strong> A company that runs cloud at large scale, usually on its own campuses or dedicated leases (AWS, Azure, Google Cloud), or mostly for internal workloads (Meta).</p>
+                    <p><strong>Colocation:</strong> A landlord model. The provider supplies space, power, and cooling; tenants bring servers (Equinix, Digital Realty). They are not ranked in this cloud revenue table.</p>
+                  </div>
+                </details>
+              </section>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <section className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm space-y-3">
+                  <h3 className="font-semibold text-stone-900 text-sm">US electricity use (retail sales)</h3>
+                  <ElectricityLineChart
+                    data={baselines.usElectricity.historical}
+                    sourceLabel={baselines.usElectricity.sourceLabel}
+                    sourceUrl={baselines.usElectricity.sourceUrl}
+                  />
+                  <p className="text-sm text-stone-600 leading-relaxed">
+                    Data centers are often estimated at <strong>{baselines.industryContext.dataCenterSharePercent.low}–{baselines.industryContext.dataCenterSharePercent.high}%</strong> of US electricity ({baselines.industryContext.dataCenterSharePercent.year}). {baselines.industryContext.dataCenterSharePercent.sourceLabel}.
+                  </p>
+                </section>
+
+                <section className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm space-y-3">
+                  <h3 className="font-semibold text-stone-900 text-sm">Why residential customers often pay more per kWh</h3>
+                  <div className="text-sm text-stone-600 space-y-2 leading-relaxed">
+                    <p>Home bills bundle more than energy: distribution wires, wildfire and grid hardening, public purpose programs, and legacy costs. Large data centers usually buy under commercial or industrial tariffs with different rate structures.</p>
+                    <p>The facility economics defaults use about <strong>${baselines.industryContext.economicsDefaults.energyPricePerMWh}/MWh</strong> (large-customer band). US residential averages near <strong>${baselines.industryContext.energyPriceBenchmarks.usResidentialPerMWh}/MWh</strong>; California residential is often higher.</p>
+                    <p>When grid upgrade costs are socialized to ratepayers (see the SB 886 ratepayer share on Plan a site), residential bills can feel the spillover. That is a policy allocation question, not a physics rule.</p>
+                  </div>
+                  <p className="text-[10px] text-stone-400">
+                    <a href={baselines.industryContext.energyPriceBenchmarks.eiaPricesUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600">EIA average retail prices by sector</a>
+                  </p>
+                </section>
+              </div>
+            </main>
+          )}
+
           {activeTab === 'how-it-works' && (
-            <main className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 space-y-4">
+            <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-4">
               <div className="border-b border-stone-200 pb-4">
                 <h2 className="font-serif text-2xl font-bold text-stone-900">How it works</h2>
-                <p className="text-sm text-stone-600 mt-1 leading-relaxed">
-                  Bill context, background data, and formulas behind the planner. Everything here is illustrative; verify bill text at{' '}
+                <p className="text-sm text-stone-600 mt-1 leading-relaxed max-w-3xl">
+                  Bill context, worked examples, and formulas behind the planner. Verify bill text at{' '}
                   <a href="https://leginfo.legislature.ca.gov/" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">California Legislative Information</a>.
                 </p>
-                <button type="button" onClick={() => setActiveTab('plan')} className="mt-2 text-xs font-semibold text-stone-700 underline hover:no-underline">← Back to Plan a site</button>
+                <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-stone-700">
+                  <a href="#how-bills" className="underline hover:text-stone-900">Bills</a>
+                  <a href="#how-policy" className="underline hover:text-stone-900">Real policy</a>
+                  <a href="#how-math" className="underline hover:text-stone-900">Worked example</a>
+                  <a href="#how-formulas" className="underline hover:text-stone-900">Formulas</a>
+                  <button type="button" onClick={() => setActiveTab('plan')} className="underline hover:text-stone-900">← Plan a site</button>
+                </nav>
               </div>
 
-              <div className="bg-white border border-stone-200 rounded-lg p-4">
-                <p className="text-sm text-stone-600"><strong>Modeled scenario:</strong> {baselines.metadata.modeledScenarioDefinition}</p>
-              </div>
+              <details className="bg-white border border-stone-200 rounded-lg p-4">
+                <summary className="font-semibold text-stone-800 text-sm cursor-pointer">What does &quot;modeled estimate&quot; mean?</summary>
+                <p className="text-sm text-stone-600 mt-2 leading-relaxed">{baselines.metadata.modeledScenarioDefinition}</p>
+              </details>
 
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2">Why these bills</h3>
+              <h3 id="how-bills" className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2 scroll-mt-4">California bill scenarios</h3>
               {[
                 {
                   key: 'SB886',
-                  title: 'Who pays for grid upgrades? (SB 886 style)',
-                  body: 'Debate over whether large data centers pay full grid upgrade costs or spread them to ratepayers. This scenario assigns 100% to the developer at 25 MW and above.',
+                  title: 'Grid upgrade cost allocation',
+                  billNote: 'SB 886 style',
+                  body: 'Debate over whether large data centers pay full interconnection / grid upgrade costs or spread them to ratepayers. This scenario assigns 100% to the developer at 25 MW and above.',
                 },
                 {
                   key: 'SB887',
-                  title: 'How long might permitting take? (SB 887 style)',
+                  title: 'How long might permitting take?',
+                  billNote: 'SB 887 style',
                   body: 'CEQA timelines vary by project and lead agency. This scenario adds 12 months for open-loop evaporative cooling and shortens to 12 months when water, clean power, and size line up.',
                 },
                 {
                   key: 'AB1577',
-                  title: 'What would operators have to report? (AB 1577 style)',
+                  title: 'What must operators report?',
+                  billNote: 'AB 1577 style',
                   body: 'Proposals for more transparency on energy use, waste heat, and backup generation. This scenario turns on monthly reporting above 500 kW (0.5 MW).',
                 },
               ].map((item) => {
@@ -1880,7 +2012,10 @@
                 return (
                   <article key={item.key} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="font-semibold text-stone-900 text-sm">{item.title}</h3>
+                      <div>
+                        <h3 className="font-semibold text-stone-900 text-sm">{item.title}</h3>
+                        <p className="text-[10px] text-stone-400 mt-0.5">{item.billNote}</p>
+                      </div>
                       <StatusBadge status={rule.status} />
                     </div>
                     <p className="text-sm text-stone-600 leading-relaxed">{item.body}</p>
@@ -1889,7 +2024,7 @@
                 );
               })}
 
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2">Real policy: are people arguing data centers should pay more?</h3>
+              <h3 id="how-policy" className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2 scroll-mt-4">Real policy: are people arguing data centers should pay more?</h3>
               <article className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <EvidenceBadge level="moderate" />
@@ -1916,61 +2051,7 @@
                 </p>
               </article>
 
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2">Background context</h3>
-
-              <CollapsibleSection title="Cloud market and electricity trends">
-                <section className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="font-semibold text-stone-900 text-sm">Top cloud infrastructure providers (global)</h4>
-                    <EvidenceBadge level="moderate" />
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead>
-                        <tr className="border-b border-stone-200 text-xs text-stone-500">
-                          <th className="py-2 pr-3 font-semibold">#</th>
-                          <th className="py-2 pr-3 font-semibold">Company</th>
-                          <th className="py-2 pr-3 font-semibold">Type</th>
-                          <th className="py-2 font-semibold text-right">Share</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-stone-700">
-                        {baselines.industryContext.cloudProviders.map((row) => (
-                          <tr key={row.rank} className="border-b border-stone-100">
-                            <td className="py-2 pr-3 font-mono text-xs">{row.rank}</td>
-                            <td className="py-2 pr-3">{row.name}</td>
-                            <td className="py-2 pr-3 text-xs text-stone-500">{row.type}</td>
-                            <td className="py-2 text-right font-mono text-xs">{row.marketSharePercent != null ? `${row.marketSharePercent}%` : row.note || 'n/a'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <ElectricityLineChart
-                    data={baselines.usElectricity.historical}
-                    sourceLabel={baselines.usElectricity.sourceLabel}
-                    sourceUrl={baselines.usElectricity.sourceUrl}
-                  />
-                  <p className="text-xs text-stone-500">
-                    Data centers are often estimated at {baselines.industryContext.dataCenterSharePercent.low} to {baselines.industryContext.dataCenterSharePercent.high}% of US electricity ({baselines.industryContext.dataCenterSharePercent.year}). {baselines.industryContext.dataCenterSharePercent.sourceLabel}.
-                  </p>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    When grid upgrade costs shift to ratepayers in the SB 886 scenario, residential bills can feel the spillover. Large commercial customers often pay lower per-kWh rates than homes.
-                  </p>
-                </section>
-              </CollapsibleSection>
-
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2">Formulas and assumptions</h3>
-
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-3 shadow-sm">
-                <h3 className="font-semibold text-stone-900 text-sm">Evidence strength labels</h3>
-                <div className="flex flex-wrap gap-2">
-                  <EvidenceBadge level="strong" />
-                  <EvidenceBadge level="moderate" />
-                  <EvidenceBadge level="weak" />
-                  <EvidenceBadge level="speculative" />
-                </div>
-              </section>
+              <h3 id="how-math" className="text-sm font-semibold uppercase tracking-wide text-stone-500 pt-2 scroll-mt-4">Formulas and worked example</h3>
 
               <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
                 <label className="block text-sm font-semibold text-stone-800">
@@ -1984,6 +2065,7 @@
                     <option value="30mw-pge">30 MW, PG&E, closed-loop air, clean power on</option>
                   </select>
                 </label>
+                <p className="text-xs text-stone-500">Select an example to see each calculation step with numbers filled in.</p>
                 {workedExample.map((block) => (
                   <div key={block.label} className="border-t border-stone-100 pt-3 first:border-0 first:pt-0">
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-2">{block.label}</h4>
@@ -1994,57 +2076,53 @@
                 ))}
               </section>
 
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
-                <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h3 className="font-semibold text-stone-900 text-sm">SB 886 style grid cost allocation</h3></div>
-                <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
-                  <li><strong>Threshold:</strong> At 25 MW and above, developer pays 100% of placeholder upgrade cost.</li>
-                  <li><strong>Upgrade cost:</strong> <code className="text-xs bg-stone-100 px-1 rounded">MW x utility $/MW</code>. PG&E $250k, SDG&E $410k, SCE $180k per MW (placeholders).</li>
-                  <li><strong>Below 25 MW:</strong> Developer 75%, ratepayers 25% in this scenario.</li>
-                  <li><strong>Clean energy:</strong> At 25 MW and above, annual = <code className="text-xs bg-stone-100 px-1 rounded">MW x 50% x $75,000</code>, x 15 years.</li>
-                </ul>
-              </section>
-
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
-                <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h3 className="font-semibold text-stone-900 text-sm">SB 887 style CEQA timeline</h3></div>
-                <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
-                  <li><strong>Baseline:</strong> 36 months (modeled standard path).</li>
-                  <li><strong>12 months:</strong> Modeled fast path when cooling avoids open-loop water, clean power is on, and MW is at least 25.</li>
-                  <li><strong>48 months:</strong> Baseline plus 12 for open-loop evaporative cooling.</li>
-                </ul>
-              </section>
-
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
-                <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h3 className="font-semibold text-stone-900 text-sm">AB 1577 style disclosure</h3></div>
-                <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
-                  <li><strong>Threshold:</strong> 500 kW (0.5 MW).</li>
-                  <li><strong>Above threshold:</strong> Modeled monthly PUE, waste heat, and backup emissions reporting.</li>
-                </ul>
-              </section>
-
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
-                <h3 className="font-semibold text-stone-900 text-sm">Facility economics formulas</h3>
-                <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">CapEx = MW x build cost per MW</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Annual MWh = MW x 8,760 x load factor x PUE</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Annual energy $ = Annual MWh x $/MWh</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Annual opex = MW x $/MW-year</code> (staffing, maintenance)</li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Clean-energy PPA = MW x 50% x $75k</code> at 25 MW and above (SB 886 scenario)</li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Permitting delay carry = (CapEx + grid) x rate x (months past 12 / 12)</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Colo revenue = online MW x occupancy x 1,000 x $/kW/month x 12</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">CapEx spent evenly over construction years; MW online ramps with build</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Occupancy ramps linearly over lease-up years from first energization</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Permitting months delay when construction and revenue start</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Payback (schedule) = first year cumulative net cash flow turns positive</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Debt service = PMT(rate, term, principal)</code> on debt share of upfront, starting when construction completes</li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">Levered CF = unlevered CF + loan proceeds − debt service</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">DSCR = (revenue − operating cost) / debt service</code></li>
-                  <li><code className="text-xs bg-stone-100 px-1 rounded">NPV = Σ CF_t / (1 + discount)^t</code>; IRR solves NPV(rate) = 0</li>
-                  <li><strong>Sensitivity:</strong> one input perturbed low/high at a time; tornado bar width = impact on IRR or NPV</li>
-                </ul>
-                <p className="text-xs text-stone-500 border-t border-stone-100 pt-2">
-                  Stabilized payback uses full MW at 100% occupancy. Schedule payback uses cumulative cash flow with phased build and lease-up. IRR/NPV/DSCR use the financing schedule when enabled. Excludes taxes and land.
-                </p>
-              </section>
+              <CollapsibleSection title="Formulas and assumptions">
+                <section id="how-formulas" className="space-y-2 scroll-mt-4">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <EvidenceBadge level="strong" />
+                    <EvidenceBadge level="moderate" />
+                    <EvidenceBadge level="weak" />
+                    <EvidenceBadge level="speculative" />
+                  </div>
+                  <div className="flex items-center gap-2"><StatusBadge status="modeled" /><h4 className="font-semibold text-stone-900 text-sm">Grid upgrade allocation (SB 886 style)</h4></div>
+                  <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
+                    <li><strong>Threshold:</strong> At 25 MW and above, developer pays 100% of modeled upgrade cost.</li>
+                    <li><strong>Upgrade cost:</strong> <code className="text-xs bg-stone-100 px-1 rounded">MW x utility $/MW</code>. PG&E $250k, SDG&E $410k, SCE $180k per MW (illustrative placeholders).</li>
+                    <li><strong>Below 25 MW:</strong> Developer 75%, ratepayers 25% in this scenario.</li>
+                    <li><strong>Clean energy:</strong> At 25 MW and above, annual = <code className="text-xs bg-stone-100 px-1 rounded">MW x 50% x $75,000</code>, x 15 years.</li>
+                  </ul>
+                  <div className="flex items-center gap-2 pt-2"><StatusBadge status="modeled" /><h4 className="font-semibold text-stone-900 text-sm">CEQA timeline (SB 887 style)</h4></div>
+                  <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
+                    <li><strong>Baseline:</strong> 36 months (modeled standard path).</li>
+                    <li><strong>12 months:</strong> Modeled fast path when cooling avoids open-loop water, clean power is on, and MW is at least 25.</li>
+                    <li><strong>48 months:</strong> Baseline plus 12 for open-loop evaporative cooling.</li>
+                  </ul>
+                  <div className="flex items-center gap-2 pt-2"><StatusBadge status="modeled" /><h4 className="font-semibold text-stone-900 text-sm">Disclosure (AB 1577 style)</h4></div>
+                  <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
+                    <li><strong>Threshold:</strong> 500 kW (0.5 MW).</li>
+                    <li><strong>Above threshold:</strong> Modeled monthly PUE, waste heat, and backup emissions reporting.</li>
+                  </ul>
+                  <h4 className="font-semibold text-stone-900 text-sm pt-2">Facility economics formulas</h4>
+                  <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">CapEx = MW x build cost per MW</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Annual MWh = MW x 8,760 x load factor x PUE</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Annual energy $ = Annual MWh x $/MWh</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Annual opex = MW x $/MW-year</code> (staffing, maintenance)</li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Clean-energy PPA = MW x 50% x $75k</code> at 25 MW and above (SB 886 scenario)</li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Permitting delay carry = (CapEx + grid) x rate x (months past 12 / 12)</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Colo revenue = online MW x occupancy x 1,000 x $/kW/month x 12</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">CapEx spent evenly over construction years; MW online ramps with build</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Occupancy ramps linearly over lease-up years from first energization</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Permitting months delay when construction and revenue start</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Payback (schedule) = first year cumulative net cash flow turns positive</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Debt service = PMT(rate, term, principal)</code> on debt share of upfront, starting when construction completes</li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">Levered CF = unlevered CF + loan proceeds - debt service</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">DSCR = (revenue - operating cost) / debt service</code></li>
+                    <li><code className="text-xs bg-stone-100 px-1 rounded">NPV = Σ CF_t / (1 + discount)^t</code>; IRR solves NPV(rate) = 0</li>
+                    <li><strong>Sensitivity:</strong> one input perturbed low/high at a time; tornado bar width = impact on IRR or NPV</li>
+                  </ul>
+                </section>
+              </CollapsibleSection>
 
               <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
                 <h3 className="font-semibold text-stone-900 text-sm">Model assumptions</h3>

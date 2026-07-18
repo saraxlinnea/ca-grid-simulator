@@ -4,7 +4,7 @@
 
 A free planning tool for California data center siting: compare illustrative grid cost splits, CEQA timeline guesses, and disclosure thresholds under bill-inspired scenarios. Numbers are placeholders, not utility quotes.
 
-![Try a scenario tab: facility inputs and results](docs/screenshot.png)
+![Plan a site tab: facility inputs and results](docs/screenshot.png)
 
 ## About this project
 
@@ -16,7 +16,7 @@ The whole app is in [`index.html`](index.html) (React via CDN + Babel). No build
 
 ## Disclaimer
 
-Not legal, regulatory, or investment advice. Labels marked **Modeled scenario** are what-ifs. Check bill text and agency guidance before you rely on anything here.
+Not legal, regulatory, or investment advice. Labels marked **Modeled estimate** are what-ifs. Check bill text and agency guidance before you rely on anything here.
 
 ## Quick start (local)
 
@@ -41,8 +41,9 @@ Hard refresh if you see a stale page: **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** 
 
 | Tab | What it does |
 |-----|----------------|
-| **Plan a site** | Set inputs, compare scenarios with presets, read the summary scorecard. Facility economics include per-input source notes; permitting delay feeds into upfront cost |
-| **How it works** | Bill context, real cost-allocation policy (SB 57, CPUC), background data, formulas, assumptions, and sources |
+| **Plan a site** | Set size and options; compare grid upgrade cost, permitting months, and disclosure |
+| **Background** | Cloud market table, US electricity trends, residential vs commercial rate context |
+| **How it works** | Bill scenarios, policy notes, worked examples, and formulas |
 
 ## Troubleshooting
 
