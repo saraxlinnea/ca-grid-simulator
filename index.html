@@ -38,8 +38,14 @@
         extend: {
           fontFamily: {
             sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
-            serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+            serif: ['"Fraunces"', '"Source Serif 4"', 'Georgia', 'serif'],
             mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            fog: { 50: '#F3F5F7', 100: '#E7EBEE', 200: '#D0D7DE', 700: '#4A5560', 900: '#1C2429' },
+            pacific: { 50: '#E8F3F2', 100: '#D1E7E5', 600: '#1A6B66', 700: '#145552', 800: '#0F403E' },
+            chaparral: { 50: '#F7F1E4', 100: '#EDE2C8', 500: '#C4A35A', 600: '#A8873F', 700: '#8A6C32' },
+            asphalt: { 800: '#243038', 900: '#161D22', 950: '#0E1317' },
           },
         },
       },
@@ -49,18 +55,62 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin onerror="window.__cdnLoadError('ReactDOM')"></script>
   <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js" onerror="window.__cdnLoadError('Babel')"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap');
-    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+    :root {
+      --fog: #F3F5F7;
+      --fog-deep: #E7EBEE;
+      --pacific: #1A6B66;
+      --chaparral: #C4A35A;
+      --asphalt: #161D22;
+      --ink: #1C2429;
+    }
+    body {
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+      color: var(--ink);
+      background-color: var(--fog);
+    }
+    .site-atmosphere {
+      background-color: var(--fog);
+      background-image:
+        linear-gradient(180deg, rgba(22, 29, 34, 0.04) 0%, transparent 28%),
+        linear-gradient(90deg, rgba(26, 107, 102, 0.04) 1px, transparent 1px),
+        linear-gradient(rgba(22, 29, 34, 0.035) 1px, transparent 1px);
+      background-size: auto, 48px 48px, 48px 48px;
+      background-position: 0 0, -1px -1px, -1px -1px;
+    }
+    .header-sheen {
+      background:
+        linear-gradient(135deg, rgba(196, 163, 90, 0.14) 0%, transparent 42%),
+        linear-gradient(180deg, #1c2830 0%, #161D22 100%);
+    }
+    .metric-pulse {
+      animation: metricIn 280ms ease-out;
+    }
+    @keyframes metricIn {
+      from { opacity: 0.35; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tab-panel-enter {
+      animation: panelIn 320ms ease-out;
+    }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .range-ca {
+      accent-color: #1A6B66;
+    }
     @media print {
       @page { margin: 0.75in; }
       .no-print { display: none !important; }
       .print-only { display: block !important; }
       body { background: #fff !important; color: #111 !important; }
+      .site-atmosphere { background: #fff !important; }
     }
     .print-only { display: none; }
   </style>
 </head>
-<body class="h-full text-stone-800 overflow-x-hidden antialiased">
+<body class="h-full text-fog-900 overflow-x-hidden antialiased">
   <noscript>
     <p style="padding:1rem;color:#991b1b;background:#fef2f2;">JavaScript is required to run this planning tool.</p>
   </noscript>
@@ -78,7 +128,7 @@
         lastUpdated: 'July 2026',
         disclaimer: 'Not legal, regulatory, or utility advice.',
         topBarBriefing: 'A free planning tool for California data center siting. Compare grid upgrade cost allocation, permitting timelines, and reporting under simplified bill-inspired scenarios. Numbers are illustrative estimates, not real bills or utility quotes.',
-        appEyebrow: 'Planning tool · California',
+        appEyebrow: 'California · Grid & siting',
         appTitle: 'California Data Center Siting Planner',
         appSubtitle: 'Set facility size, utility territory, and cooling. Compare grid upgrade cost allocation, permitting months, and disclosure under three bill-inspired scenarios. Figures are illustrative, not quotes from utilities or agencies.',
         modeledScenarioDefinition: 'A modeled estimate borrows ideas from real California bills, simplifies them, and runs the math so you can compare options. It is not a statement of current law.',
@@ -226,12 +276,71 @@
           { maxMW: 150, label: 'Major campus', example: 'Multi-building campus scale, the kind of load that shows up in state grid planning and interconnection queue debates. Microsoft\u2019s San Jose campus is permitted for up to 99 MW total.', sourceLabel: 'CEC: Microsoft San Jose Data Center', sourceUrl: 'https://www.energy.ca.gov/powerplant/backup-generating-system/san-jose-data-center' },
         ],
         scenarioPresets: [
-          { id: 'edge', label: 'Edge · 0.4 MW', mw: 0.4, utilityCode: 'PGE', coolingType: 'Closed-Loop Air Cooled', prefundCleanEnergy: true, hint: 'Below AB 1577 threshold' },
-          { id: 'colo', label: 'Colo · 10 MW', mw: 10, utilityCode: 'PGE', coolingType: 'Closed-Loop Air Cooled', prefundCleanEnergy: true, hint: 'Reporting on, split grid cost' },
-          { id: 'campus', label: 'Campus · 30 MW', mw: 30, utilityCode: 'PGE', coolingType: 'Closed-Loop Air Cooled', prefundCleanEnergy: true, hint: 'Default PG&E campus phase' },
-          { id: 'large', label: 'Large · 75 MW', mw: 75, utilityCode: 'SCE', coolingType: 'Closed-Loop Air Cooled', prefundCleanEnergy: true, hint: 'Full developer grid share' },
-          { id: 'stress', label: 'Stress test', mw: 30, utilityCode: 'PGE', coolingType: 'Evaporative Open-Loop', prefundCleanEnergy: false, hint: 'Open-loop, no clean power' },
+          {
+            id: 'edge',
+            label: 'Edge',
+            mw: 0.4,
+            utilityCode: 'PGE',
+            coolingType: 'Closed-Loop Air Cooled',
+            prefundCleanEnergy: true,
+            hint: 'Below AB 1577 disclosure threshold',
+            shortDesc: 'Small edge node or server room near users',
+            whyBuilt: 'Low latency for local apps, CDN caches, telco and retail sites. Rarely large enough to show up in state grid planning.',
+            prevalenceNote: 'Common as many small sites; each one is tiny relative to the California grid.',
+            policyNote: 'Below 0.5 MW, monthly disclosure does not apply in this model.',
+          },
+          {
+            id: 'colo',
+            label: 'Colocation',
+            mw: 10,
+            utilityCode: 'PGE',
+            coolingType: 'Closed-Loop Air Cooled',
+            prefundCleanEnergy: true,
+            hint: 'Reporting on; developer pays 75% of modeled upgrade',
+            shortDesc: 'Multi-tenant building renting power and space',
+            whyBuilt: 'Enterprises and cloud providers lease racks instead of owning campuses. Operators sell space, power, and cooling; tenants bring servers.',
+            prevalenceNote: 'A large share of existing commercial capacity in markets like Northern California, LA, and Sacramento corridors.',
+            policyNote: 'Above 0.5 MW disclosure applies; below 25 MW the developer pays 75% of the modeled grid upgrade.',
+          },
+          {
+            id: 'campus',
+            label: 'Campus',
+            mw: 30,
+            utilityCode: 'PGE',
+            coolingType: 'Closed-Loop Air Cooled',
+            prefundCleanEnergy: true,
+            hint: 'Default: PG&E campus phase above 25 MW threshold',
+            shortDesc: 'Single building or first campus phase',
+            whyBuilt: 'Hyperscalers and large enterprises add capacity in phases. One building often lands near 25-50 MW before the full campus grows.',
+            prevalenceNote: 'Typical scale for a first phase. Microsoft\'s San Jose (Alviso) campus filed a 48 MW first phase across two buildings on PG&E.',
+            policyNote: 'At or above 25 MW, this model assigns 100% of the upgrade cost to the developer.',
+            isDefault: true,
+          },
+          {
+            id: 'large',
+            label: 'Large',
+            mw: 75,
+            utilityCode: 'SCE',
+            coolingType: 'Closed-Loop Air Cooled',
+            prefundCleanEnergy: true,
+            hint: 'Hyperscale phase; full developer grid share',
+            shortDesc: 'Large hyperscaler building or early campus',
+            whyBuilt: 'AI training and inference need dense power. New interconnection requests skew larger because GPU halls draw far more watts per rack than older enterprise loads.',
+            prevalenceNote: 'Fewer sites than colo or edge, but each one dominates local load growth and utility planning debates.',
+            policyNote: 'Full modeled developer grid share; monthly disclosure applies.',
+          },
         ],
+        stressTestPreset: {
+          id: 'stress',
+          label: 'Stress test',
+          mw: 30,
+          utilityCode: 'PGE',
+          coolingType: 'Evaporative Open-Loop',
+          prefundCleanEnergy: false,
+          hint: 'Same 30 MW campus with harder assumptions',
+          shortDesc: 'Not a facility size. Applies open-loop cooling and turns clean power off on a 30 MW campus to lengthen the modeled permitting path.',
+        },
+        buildTrendNote: 'New capacity is increasingly driven by AI and GPU cloud. Hyperscalers (AWS, Azure, Google Cloud) dominate large builds; colocation still serves multi-tenant demand. California load forecasts and interconnection queues are rising because a single campus can equal tens of thousands of homes in annual electricity use.',
       },
       modelAssumptions: [
         'Grid upgrade cost scales linearly with facility MW using one territory-wide $/MW placeholder per utility, not a site-specific interconnection study.',
@@ -834,9 +943,9 @@
     }
 
     const STATUS_STYLES = {
-      modeled: 'bg-stone-100 text-stone-700 border-stone-300',
-      proposed: 'bg-amber-50 text-amber-800 border-amber-200',
-      enacted: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      modeled: 'bg-fog-100 text-fog-700 border-fog-200',
+      proposed: 'bg-chaparral-50 text-chaparral-700 border-chaparral-100',
+      enacted: 'bg-pacific-50 text-pacific-800 border-pacific-100',
     };
 
     function StatusBadge({ status }) {
@@ -862,10 +971,10 @@
     }
 
     const EVIDENCE_STYLES = {
-      strong: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-      moderate: 'bg-blue-50 text-blue-800 border-blue-200',
+      strong: 'bg-pacific-50 text-pacific-800 border-pacific-100',
+      moderate: 'bg-chaparral-50 text-chaparral-700 border-chaparral-100',
       weak: 'bg-amber-50 text-amber-800 border-amber-200',
-      speculative: 'bg-stone-100 text-stone-600 border-stone-300',
+      speculative: 'bg-fog-100 text-fog-700 border-fog-200',
     };
 
     const EVIDENCE_LABELS = {
@@ -988,8 +1097,8 @@
         levered.push({ year: row.year, value: cumL });
       });
       const series = showFinancing
-        ? [{ data: unlevered, color: '#78716c', label: 'Unlevered' }, { data: levered, color: '#0369a1', label: 'Levered' }]
-        : [{ data: unlevered, color: '#78716c', label: 'Cumulative' }];
+        ? [{ data: unlevered, color: '#4A5560', label: 'Unlevered' }, { data: levered, color: '#1A6B66', label: 'Levered' }]
+        : [{ data: unlevered, color: '#1A6B66', label: 'Cumulative' }];
       const allVals = series.flatMap((s) => s.data.map((d) => d.value));
       const minY = Math.min(0, ...allVals);
       const maxY = Math.max(0, ...allVals);
@@ -1056,7 +1165,7 @@
               const y = pad.top + index * rowHeight + rowHeight / 2;
               const xLow = xScale(Math.min(row.low, row.high));
               const xHigh = xScale(Math.max(row.low, row.high));
-              const barColor = row.low < baseValue && row.high < baseValue ? '#b91c1c' : row.low > baseValue && row.high > baseValue ? '#047857' : '#0369a1';
+              const barColor = row.low < baseValue && row.high < baseValue ? '#b91c1c' : row.low > baseValue && row.high > baseValue ? '#145552' : '#1A6B66';
               return (
                 <g key={row.key}>
                   <text x={pad.left - 8} y={y + 3} textAnchor="end" className="fill-stone-600 text-[9px]">{row.label}</text>
@@ -1075,12 +1184,12 @@
 
     function CollapsibleSection({ title, children, defaultOpen = false }) {
       return (
-        <details className="bg-white border border-stone-200 rounded-lg shadow-sm group" {...(defaultOpen ? { open: true } : {})}>
-          <summary className="font-semibold text-stone-900 text-sm p-3 cursor-pointer list-none flex justify-between items-center gap-2">
+        <details className="bg-white/95 border border-fog-200 rounded-lg shadow-sm group" {...(defaultOpen ? { open: true } : {})}>
+          <summary className="font-semibold text-asphalt-900 text-sm p-3 cursor-pointer list-none flex justify-between items-center gap-2">
             <span>{title}</span>
-            <span className="text-stone-400 text-[10px] shrink-0 group-open:rotate-180 transition-transform">▼</span>
+            <span className="text-pacific-600 text-[10px] shrink-0 group-open:rotate-180 transition-transform">▼</span>
           </summary>
-          <div className="px-3 pb-3 pt-0 border-t border-stone-100 space-y-3">{children}</div>
+          <div className="px-3 pb-3 pt-0 border-t border-fog-100 space-y-3">{children}</div>
         </details>
       );
     }
@@ -1108,9 +1217,9 @@
                 <text x={pad.left - 6} y={yScale(tick) + 3} textAnchor="end" className="fill-stone-400 text-[9px] font-mono">{tick}</text>
               </g>
             ))}
-            <polyline fill="none" stroke="#57534e" strokeWidth="2" points={points} />
+            <polyline fill="none" stroke="#1A6B66" strokeWidth="2.25" points={points} />
             {data.map((d) => (
-              <circle key={d.year} cx={xScale(d.year)} cy={yScale(d.billionKWh)} r="3" fill="#57534e" />
+              <circle key={d.year} cx={xScale(d.year)} cy={yScale(d.billionKWh)} r="3" fill="#1A6B66" />
             ))}
             {xTicks.map((d) => (
               <text key={d.year} x={xScale(d.year)} y={height - 8} textAnchor="middle" className="fill-stone-500 text-[9px] font-mono">{d.year}</text>
@@ -1235,7 +1344,31 @@
         setPrefundCleanEnergy(preset.prefundCleanEnergy);
       };
 
-      const scenarioPresets = baselines.industryContext.scenarioPresets;
+      const facilityTypes = baselines.industryContext.scenarioPresets;
+      const stressTestPreset = baselines.industryContext.stressTestPreset;
+
+      const activeFacilityType = useMemo(() => {
+        return facilityTypes.find((preset) => (
+          megawatts === preset.mw
+          && utilityCode === preset.utilityCode
+          && coolingType === preset.coolingType
+          && prefundCleanEnergy === preset.prefundCleanEnergy
+        )) || null;
+      }, [facilityTypes, megawatts, utilityCode, coolingType, prefundCleanEnergy]);
+
+      const stressTestActive = useMemo(() => (
+        megawatts === stressTestPreset.mw
+        && utilityCode === stressTestPreset.utilityCode
+        && coolingType === stressTestPreset.coolingType
+        && prefundCleanEnergy === stressTestPreset.prefundCleanEnergy
+      ), [megawatts, utilityCode, coolingType, prefundCleanEnergy, stressTestPreset]);
+
+      const facilityTypeEnergy = useMemo(() => {
+        return facilityTypes.map((preset) => {
+          const scale = getEnergyScale(preset.mw, loadFactor, pue);
+          return { ...preset, ...scale };
+        });
+      }, [facilityTypes, loadFactor, pue]);
 
       const scenarioSummary = useMemo(() => {
         const disclosureLabel = ab1577Results.isTriggered ? 'Monthly reporting' : 'No reporting';
@@ -1259,16 +1392,16 @@
       ];
 
       return (
-        <div className="flex-1 flex flex-col min-h-screen bg-stone-50">
+        <div className="flex-1 flex flex-col min-h-screen site-atmosphere">
           {!disclaimerDismissed && (
-            <div className="no-print bg-amber-50 border-b border-amber-200 px-4 py-3" role="note">
+            <div className="no-print bg-chaparral-50 border-b border-chaparral-100 px-4 py-3" role="note">
               <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-start gap-3 justify-between">
-                <p className="text-sm text-amber-950 leading-relaxed">
+                <p className="text-sm text-asphalt-900 leading-relaxed">
                   <strong>What this is:</strong> {baselines.metadata.topBarBriefing} <strong>{baselines.metadata.disclaimer}</strong>
                 </p>
                 <button
                   onClick={() => setDisclaimerDismissed(true)}
-                  className="shrink-0 text-xs font-semibold text-amber-900 underline hover:no-underline"
+                  className="shrink-0 text-xs font-semibold text-chaparral-700 underline hover:no-underline"
                 >
                   Dismiss
                 </button>
@@ -1276,24 +1409,31 @@
             </div>
           )}
 
-          <header className="no-print bg-white border-b border-stone-200 px-6 py-5">
-            <div className="max-w-6xl mx-auto flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1">{baselines.metadata.appEyebrow}</p>
-                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          <header className="no-print header-sheen border-b border-asphalt-800 px-6 py-7 text-white">
+            <div className="max-w-6xl mx-auto flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-chaparral-500 mb-2">
+                  {baselines.metadata.appEyebrow}
+                </p>
+                <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
                   {baselines.metadata.appTitle}
                 </h1>
-                <p className="text-sm text-stone-600 mt-1 max-w-2xl">
+                <p className="text-sm text-fog-200 mt-2.5 max-w-2xl leading-relaxed">
                   {baselines.metadata.appSubtitle}
                 </p>
+                <p className="mt-3 text-[11px] font-mono uppercase tracking-wider text-pacific-100/90">
+                  PG&amp;E · SCE · SDG&amp;E
+                </p>
               </div>
-              <nav className="flex flex-wrap gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200">
+              <nav className="flex flex-wrap gap-1 bg-asphalt-950/60 p-1 rounded-lg border border-white/10 backdrop-blur-sm" aria-label="Primary">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-                      activeTab === tab.id ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-600 hover:text-stone-900'
+                    className={`px-3.5 py-2 rounded-md text-xs font-semibold transition ${
+                      activeTab === tab.id
+                        ? 'bg-pacific-600 text-white shadow-sm'
+                        : 'text-fog-200 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {tab.label}
@@ -1304,7 +1444,7 @@
           </header>
 
           {activeTab === 'plan' && (
-            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-3">
+            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-3 tab-panel-enter">
               <div className="print-only mb-4 border-b border-stone-300 pb-4">
                 <h1 className="font-serif text-2xl font-bold text-stone-900">Scenario summary</h1>
                 <p className="text-sm text-stone-600 mt-1">
@@ -1312,104 +1452,209 @@
                 </p>
               </div>
 
-              <div className="no-print text-sm text-stone-600 bg-white border border-stone-200 rounded-lg px-3 py-2">
-                Adjust size and options below. The summary updates with <strong>grid upgrade cost to the project</strong>, <strong>permitting months</strong>, and <strong>disclosure</strong>.
+              <div className="no-print text-sm text-fog-700 bg-white/80 border border-fog-200 rounded-lg px-3 py-2.5 backdrop-blur-sm">
+                Adjust size and options below. The summary updates with <strong className="text-asphalt-900">grid upgrade cost to the project</strong>, <strong className="text-asphalt-900">permitting months</strong>, and <strong className="text-asphalt-900">disclosure</strong>.
               </div>
 
-              <div className="no-print sticky top-0 z-10 bg-stone-50/95 backdrop-blur border border-stone-200 rounded-lg p-3 shadow-sm space-y-2">
+              <div className="no-print sticky top-0 z-10 bg-white/90 backdrop-blur-md border border-fog-200 rounded-lg p-3.5 shadow-sm space-y-2.5">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                  <span className="font-semibold text-stone-900">{formatMW(megawatts)} MW</span>
-                  <span className="text-stone-400">·</span>
-                  <span className="text-stone-600">{baselines.utilityBaselines[utilityCode]?.name || utilityCode}</span>
-                  <span className="text-stone-400">·</span>
-                  <span className="text-stone-600 text-xs">{coolingType}</span>
+                  <span className="font-semibold text-asphalt-900 font-mono">{formatMW(megawatts)} MW</span>
+                  <span className="text-fog-200">·</span>
+                  <span className="text-fog-700">{baselines.utilityBaselines[utilityCode]?.name || utilityCode}</span>
+                  <span className="text-fog-200">·</span>
+                  <span className="text-fog-700 text-xs">{coolingType}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
-                  <div className="bg-white border border-stone-200 rounded-md px-2 py-1.5">
-                    <p className="text-[10px] uppercase tracking-wide text-stone-500">Grid upgrade (developer)</p>
-                    <p className="font-mono font-semibold text-stone-900 text-sm">{formatCurrency(sb886Results?.developerShare)}</p>
+                  <div className="bg-fog-50 border border-fog-200 border-l-4 border-l-chaparral-500 rounded-md px-2 py-2">
+                    <p className="text-[10px] uppercase tracking-wide text-fog-700">Grid upgrade (developer)</p>
+                    <p key={`g-${sb886Results?.developerShare}`} className="metric-pulse font-mono font-bold text-asphalt-900 text-base">{formatCurrency(sb886Results?.developerShare)}</p>
                   </div>
-                  <div className="bg-white border border-stone-200 rounded-md px-2 py-1.5">
-                    <p className="text-[10px] uppercase tracking-wide text-stone-500">Permitting</p>
-                    <p className="font-mono font-semibold text-stone-900 text-sm">{ceqaResults.timelineMonths} mo</p>
+                  <div className="bg-fog-50 border border-fog-200 border-l-4 border-l-pacific-600 rounded-md px-2 py-2">
+                    <p className="text-[10px] uppercase tracking-wide text-fog-700">Permitting</p>
+                    <p key={`p-${ceqaResults.timelineMonths}`} className="metric-pulse font-mono font-bold text-asphalt-900 text-base">{ceqaResults.timelineMonths} mo</p>
                   </div>
-                  <div className="bg-white border border-stone-200 rounded-md px-2 py-1.5">
-                    <p className="text-[10px] uppercase tracking-wide text-stone-500">Disclosure</p>
-                    <p className="font-semibold text-stone-900 text-xs leading-tight mt-0.5">{scenarioSummary.disclosureLabel}</p>
+                  <div className="bg-fog-50 border border-fog-200 border-l-4 border-l-asphalt-800 rounded-md px-2 py-2">
+                    <p className="text-[10px] uppercase tracking-wide text-fog-700">Disclosure</p>
+                    <p key={`d-${scenarioSummary.disclosureLabel}`} className="metric-pulse font-semibold text-asphalt-900 text-xs leading-tight mt-0.5">{scenarioSummary.disclosureLabel}</p>
                   </div>
                 </div>
-                <p className="text-xs text-stone-600 leading-relaxed">{scenarioSummary.narrative}</p>
+                <p className="text-xs text-fog-700 leading-relaxed">{scenarioSummary.narrative}</p>
                 {energyScale && (
-                  <p className="text-[10px] text-stone-500">
-                    Rough electricity use: about <strong>{formatNumber(energyScale.homesEquivalent)}</strong> average US homes per year at current load factor and PUE.
+                  <p className="text-[10px] text-fog-700/80">
+                    Rough electricity use: about <strong className="text-asphalt-900">{formatNumber(energyScale.homesEquivalent)}</strong> average US homes per year at current load factor and PUE.
                   </p>
                 )}
               </div>
 
-              <div className="no-print flex flex-wrap gap-1.5">
-                {scenarioPresets.map((preset) => {
-                  const isActive = megawatts === preset.mw && utilityCode === preset.utilityCode && coolingType === preset.coolingType && prefundCleanEnergy === preset.prefundCleanEnergy;
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => loadPreset(preset)}
-                      title={preset.hint}
-                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-md border transition ${
-                        isActive
-                          ? 'bg-stone-800 text-white border-stone-800'
-                          : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <section className="no-print bg-white/95 border border-fog-200 rounded-lg p-4 shadow-sm space-y-3">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <div>
+                    <h2 className="text-sm font-semibold text-asphalt-900">Facility type</h2>
+                    <p className="text-xs text-fog-700 mt-0.5">
+                      Pick a size class to load typical inputs. The app opens on <strong className="text-asphalt-900">Campus (30 MW)</strong>, so that button starts selected.
+                    </p>
+                  </div>
+                  {activeFacilityType && (
+                    <p className="text-[10px] font-mono uppercase tracking-wide text-pacific-700 bg-pacific-50 border border-pacific-100 px-2 py-1 rounded">
+                      Active: {activeFacilityType.label} · {formatMW(activeFacilityType.mw)} MW
+                    </p>
+                  )}
+                  {!activeFacilityType && !stressTestActive && (
+                    <p className="text-[10px] font-mono uppercase tracking-wide text-fog-700 bg-fog-50 border border-fog-200 px-2 py-1 rounded">
+                      Custom inputs
+                    </p>
+                  )}
+                  {stressTestActive && (
+                    <p className="text-[10px] font-mono uppercase tracking-wide text-chaparral-700 bg-chaparral-50 border border-chaparral-100 px-2 py-1 rounded">
+                      Stress test active
+                    </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                  {facilityTypeEnergy.map((preset) => {
+                    const isActive = activeFacilityType?.id === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => loadPreset(preset)}
+                        title={preset.hint}
+                        className={`text-left p-3 rounded-lg border transition ${
+                          isActive
+                            ? 'bg-pacific-50 border-pacific-600 ring-1 ring-pacific-600/30'
+                            : 'bg-fog-50/80 border-fog-200 hover:border-pacific-600/50'
+                        }`}
+                      >
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className={`text-sm font-semibold ${isActive ? 'text-pacific-800' : 'text-asphalt-900'}`}>{preset.label}</span>
+                          <span className="font-mono text-xs font-semibold text-fog-700">{formatMW(preset.mw)} MW</span>
+                        </div>
+                        <p className="text-[11px] text-fog-700 mt-1 leading-snug">{preset.shortDesc}</p>
+                        <p className="text-[10px] text-fog-700/80 mt-2 font-mono">
+                          ~{formatNumber(preset.annualMWh)} MWh/yr · ~{formatNumber(preset.homesEquivalent)} homes
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 border-t border-fog-100">
+                  <button
+                    type="button"
+                    onClick={() => loadPreset(stressTestPreset)}
+                    title={stressTestPreset.hint}
+                    className={`text-xs font-semibold px-3 py-2 rounded-md border transition shrink-0 ${
+                      stressTestActive
+                        ? 'bg-chaparral-600 text-white border-chaparral-600'
+                        : 'bg-chaparral-50 text-chaparral-700 border-chaparral-100 hover:border-chaparral-500'
+                    }`}
+                  >
+                    {stressTestPreset.label}
+                  </button>
+                  <p className="text-[11px] text-fog-700 leading-relaxed">
+                    <strong className="text-asphalt-900">Not a facility size.</strong> {stressTestPreset.shortDesc}
+                  </p>
+                </div>
+              </section>
+
+              <CollapsibleSection title="Data center types explained" defaultOpen={false}>
+                <p className="text-sm text-fog-700 leading-relaxed">
+                  Energy figures use your current load factor ({(loadFactor * 100).toFixed(0)}%) and PUE ({pue.toFixed(2)}), same formula as the planner: MW × 8,760 × load factor × PUE. Homes use {baselines.industryContext.energyPriceBenchmarks.avgHomeKWhPerYear.toLocaleString()} kWh/year (EIA).
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead>
+                      <tr className="border-b border-fog-200 text-[10px] uppercase tracking-wide text-fog-700">
+                        <th className="py-2 pr-3 font-semibold">Type</th>
+                        <th className="py-2 pr-3 font-semibold">Size</th>
+                        <th className="py-2 pr-3 font-semibold text-right">Energy / yr</th>
+                        <th className="py-2 pr-3 font-semibold text-right">Homes</th>
+                        <th className="py-2 font-semibold">What it is</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-fog-700">
+                      {facilityTypeEnergy.map((preset) => (
+                        <tr key={preset.id} className={`border-b border-fog-100 align-top ${activeFacilityType?.id === preset.id ? 'bg-pacific-50/60' : ''}`}>
+                          <td className="py-2.5 pr-3 font-semibold text-asphalt-900 whitespace-nowrap">
+                            {preset.label}
+                            {preset.isDefault && <span className="block text-[10px] font-normal text-pacific-700">App default</span>}
+                          </td>
+                          <td className="py-2.5 pr-3 font-mono text-xs whitespace-nowrap">{formatMW(preset.mw)} MW</td>
+                          <td className="py-2.5 pr-3 font-mono text-xs text-right whitespace-nowrap">~{formatNumber(preset.annualMWh)} MWh</td>
+                          <td className="py-2.5 pr-3 font-mono text-xs text-right whitespace-nowrap">~{formatNumber(preset.homesEquivalent)}</td>
+                          <td className="py-2.5 text-xs leading-relaxed">{preset.shortDesc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {facilityTypeEnergy.map((preset) => (
+                    <article key={`${preset.id}-detail`} className={`rounded-md border p-3 space-y-1.5 ${activeFacilityType?.id === preset.id ? 'border-pacific-600 bg-pacific-50/40' : 'border-fog-200 bg-fog-50/50'}`}>
+                      <h3 className="text-sm font-semibold text-asphalt-900">{preset.label} · {formatMW(preset.mw)} MW</h3>
+                      <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">Why build it:</strong> {preset.whyBuilt}</p>
+                      <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">How common:</strong> {preset.prevalenceNote}</p>
+                      <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">In this model:</strong> {preset.policyNote}</p>
+                    </article>
+                  ))}
+                </div>
+                <p className="text-xs text-fog-700 leading-relaxed border-t border-fog-100 pt-3">
+                  <strong className="text-asphalt-900">What people are building now:</strong> {baselines.industryContext.buildTrendNote}
+                </p>
+                <p className="text-[10px] text-fog-700/70">
+                  Prevalence notes are qualitative, not a census. For market share of cloud providers, see the Background tab. Microsoft San Jose figures are from{' '}
+                  <a href="https://www.energy.ca.gov/powerplant/backup-generating-system/san-jose-data-center" target="_blank" rel="noopener noreferrer" className="underline text-pacific-700 hover:text-pacific-800">CEC filings</a>.
+                </p>
+              </CollapsibleSection>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-              <section className="no-print lg:col-span-1 bg-white border border-stone-200 rounded-lg p-4 h-fit space-y-4 shadow-sm">
+              <section className="no-print lg:col-span-1 bg-white/95 border border-fog-200 rounded-lg p-4 h-fit space-y-4 shadow-sm">
                 <div>
-                  <h2 className="text-base font-semibold text-stone-900">Your facility inputs</h2>
-                  <p className="text-xs text-stone-500 mt-1">Change inputs on the left; results update on the right.</p>
+                  <h2 className="text-base font-semibold text-asphalt-900">Your facility inputs</h2>
+                  <p className="text-xs text-fog-700 mt-1">
+                    {activeFacilityType
+                      ? `Loaded from ${activeFacilityType.label}. Adjust below or drag the slider for a custom size.`
+                      : stressTestActive
+                        ? 'Stress test loaded: open-loop cooling, clean power off. Adjust below as needed.'
+                        : 'Change inputs on the left; results update on the right.'}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-stone-700 font-medium">How big is the facility?</span>
-                    <span className="font-mono text-sm font-semibold text-stone-900 bg-stone-100 px-2 py-0.5 rounded">{formatMW(megawatts)} MW</span>
+                    <span className="text-fog-700 font-medium">How big is the facility?</span>
+                    <span className="font-mono text-sm font-semibold bg-pacific-50 text-pacific-800 px-2 py-0.5 rounded border border-pacific-100">{formatMW(megawatts)} MW</span>
                   </div>
                   <div className="relative">
                     <input
                       type="range" min={MW_SLIDER_MIN} max={MW_SLIDER_MAX} step="0.1" value={megawatts}
                       onChange={(e) => setMegawatts(Number(e.target.value))}
-                      className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-700"
+                      className="w-full h-1.5 bg-fog-200 rounded-lg appearance-none cursor-pointer range-ca"
                     />
-                    <div className="flex justify-between text-[10px] text-stone-500 font-mono mt-1.5">
+                    <div className="flex justify-between text-[10px] text-fog-700 font-mono mt-1.5">
                       <span>{MW_SLIDER_MIN} MW</span>
                       <span>{MW_SLIDER_MAX} MW</span>
                     </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] text-stone-500">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] text-fog-700">
                       {MW_POLICY_THRESHOLDS.map((threshold) => (
                         <span
                           key={threshold.mw}
-                          className={megawatts >= threshold.mw ? 'text-stone-800 font-medium underline decoration-stone-300 underline-offset-2' : ''}
+                          className={megawatts >= threshold.mw ? 'text-pacific-700 font-medium underline decoration-pacific-100 underline-offset-2' : ''}
                         >
                           <span className="font-mono">{threshold.label}</span>
-                          <span className="text-stone-400"> · </span>
+                          <span className="text-fog-200"> · </span>
                           {threshold.note}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 rounded-md p-2.5 text-xs text-stone-600 space-y-1.5 leading-relaxed">
+                  <div className="bg-fog-50 border border-fog-100 rounded-md p-2.5 text-xs text-fog-700 space-y-1.5 leading-relaxed">
                     <p>
-                      <strong className="text-stone-800">Opens at:</strong>{' '}
-                      {defaultInputs.megawatts} MW · {defaultInputs.utilityLabel} · {defaultInputs.coolingType} · clean power on.
+                      <strong className="text-asphalt-900">Default facility type:</strong>{' '}
+                      Campus · {defaultInputs.megawatts} MW · {defaultInputs.utilityLabel} · {defaultInputs.coolingType} · clean power on.
                       {' '}{baselines.industryContext.defaultExampleNote}
                     </p>
                     <p>
-                      <strong className="text-stone-800">At {formatMW(megawatts)} MW:</strong>{' '}
+                      <strong className="text-asphalt-900">At {formatMW(megawatts)} MW:</strong>{' '}
                       {sizeExample.label}. {sizeExample.example}
                       {sizeExample.sourceUrl && (
                         <>
@@ -1435,13 +1680,13 @@
                   <select
                     value={utilityCode}
                     onChange={(e) => setUtilityCode(e.target.value)}
-                    className="w-full bg-white border border-stone-300 rounded-md p-2.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400"
+                    className="w-full bg-white border border-fog-200 rounded-md p-2.5 text-sm text-asphalt-900 focus:outline-none focus:ring-2 focus:ring-pacific-600/40"
                   >
                     <option value="PGE">PG&E (Northern California)</option>
                     <option value="SDGE">SDG&E (San Diego)</option>
                     <option value="SCE">SCE (Southern California)</option>
                   </select>
-                  <p className="text-xs text-stone-500 leading-relaxed bg-stone-50 p-2.5 rounded border border-stone-100">
+                  <p className="text-xs text-fog-700 leading-relaxed bg-fog-50 p-2.5 rounded border border-fog-100">
                     {baselines.utilityBaselines[utilityCode].regionalBrief}
                   </p>
                   <FieldHelp>
@@ -1465,12 +1710,12 @@
                         onClick={() => setCoolingType(cooling.id)}
                         className={`text-left p-3 rounded-md border text-xs transition ${
                           coolingType === cooling.id
-                            ? 'bg-stone-100 border-stone-400 text-stone-900'
-                            : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'
+                            ? 'bg-pacific-50 border-pacific-600 text-asphalt-900'
+                            : 'bg-white border-fog-200 text-fog-700 hover:border-pacific-600/50'
                         }`}
                       >
                         <span className="font-semibold block">{cooling.id}</span>
-                        <span className="text-stone-500 mt-0.5 block">{cooling.desc}</span>
+                        <span className="text-fog-700/80 mt-0.5 block">{cooling.desc}</span>
                       </button>
                     ))}
                   </div>
@@ -1482,17 +1727,17 @@
                   </GlossaryTip>
                 </div>
 
-                <div className="pt-3 border-t border-stone-200">
+                <div className="pt-3 border-t border-fog-200">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={prefundCleanEnergy}
                       onChange={(e) => setPrefundCleanEnergy(e.target.checked)}
-                      className="mt-0.5 rounded border-stone-300"
+                      className="mt-0.5 rounded border-fog-200 text-pacific-600 focus:ring-pacific-600"
                     />
                     <span>
-                      <span className="text-sm font-medium text-stone-800 block">Commit to long-term clean power (15 years, modeled)</span>
-                      <span className="text-xs text-stone-500">Affects the modeled permitting timeline. Clean-energy cost estimates appear at 25 MW and above in the SB 886 breakdown.</span>
+                      <span className="text-sm font-medium text-asphalt-900 block">Commit to long-term clean power (15 years, modeled)</span>
+                      <span className="text-xs text-fog-700">Affects the modeled permitting timeline. Clean-energy cost estimates appear at 25 MW and above in the SB 886 breakdown.</span>
                     </span>
                   </label>
                   <GlossaryTip title="What is clean power here?">
@@ -1503,32 +1748,32 @@
 
               <section className="lg:col-span-2 print:col-span-full space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                  <div className="bg-white/95 border border-fog-200 border-t-4 border-t-chaparral-500 rounded-lg p-3.5 shadow-sm">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                       <StatusBadge status="modeled" />
                       <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Grid upgrade (SB 886)</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Grid upgrade (SB 886)</p>
                     </div>
-                    <p className="text-xl font-bold text-stone-900 font-mono">{formatCurrency(sb886Results?.developerShare)}</p>
-                    <p className="text-[10px] text-stone-500 mt-0.5">Developer share (modeled)</p>
+                    <p key={`card-g-${sb886Results?.developerShare}`} className="metric-pulse text-2xl font-bold text-asphalt-900 font-mono">{formatCurrency(sb886Results?.developerShare)}</p>
+                    <p className="text-[10px] text-fog-700 mt-0.5">Developer share (modeled)</p>
                   </div>
-                  <div className="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                  <div className="bg-white/95 border border-fog-200 border-t-4 border-t-pacific-600 rounded-lg p-3.5 shadow-sm">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                       <StatusBadge status="modeled" />
                       <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Permitting (SB 887)</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Permitting (SB 887)</p>
                     </div>
-                    <p className="text-xl font-bold text-stone-900 font-mono">{ceqaResults.timelineMonths} <span className="text-xs font-sans font-medium text-stone-500">mo</span></p>
+                    <p key={`card-p-${ceqaResults.timelineMonths}`} className="metric-pulse text-2xl font-bold text-asphalt-900 font-mono">{ceqaResults.timelineMonths} <span className="text-xs font-sans font-medium text-fog-700">mo</span></p>
                     <p className={`text-[10px] mt-0.5 ${ceqaResults.statusColor}`}>{ceqaResults.status}</p>
                   </div>
-                  <div className="bg-white border border-stone-200 rounded-lg p-3 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                  <div className="bg-white/95 border border-fog-200 border-t-4 border-t-asphalt-800 rounded-lg p-3.5 shadow-sm">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                       <StatusBadge status="modeled" />
                       <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Disclosure (AB 1577)</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Disclosure (AB 1577)</p>
                     </div>
-                    <p className="text-sm font-semibold text-stone-900 leading-snug">{ab1577Results.reportingCadence}</p>
-                    <p className="text-[10px] text-stone-500 mt-0.5">{ab1577Results.isTriggered ? `${ab1577Results.metricsRequired.length} metrics in scenario` : 'Below 0.5 MW threshold'}</p>
+                    <p key={`card-d-${ab1577Results.reportingCadence}`} className="metric-pulse text-sm font-semibold text-asphalt-900 leading-snug">{ab1577Results.reportingCadence}</p>
+                    <p className="text-[10px] text-fog-700 mt-0.5">{ab1577Results.isTriggered ? `${ab1577Results.metricsRequired.length} metrics in scenario` : 'Below 0.5 MW threshold'}</p>
                   </div>
                 </div>
 
@@ -1564,7 +1809,7 @@
                     <button
                       type="button"
                       onClick={() => setActiveTab('how-it-works')}
-                      className="text-xs font-semibold text-stone-700 underline hover:no-underline"
+                      className="text-xs font-semibold text-pacific-700 underline hover:no-underline"
                     >
                       Bill context and formulas →
                     </button>
@@ -1782,7 +2027,7 @@
                       )}
                       <div className="border-t border-stone-200 pt-3 space-y-2">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-xs font-semibold text-stone-800">Sensitivity (tornado)</p>
+                          <p className="text-xs font-semibold text-stone-800">Return sensitivity (one input at a time)</p>
                           <div className="flex gap-1 text-[10px]">
                             <button
                               type="button"
@@ -1882,21 +2127,21 @@
           )}
 
           {activeTab === 'background' && (
-            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-4">
-              <div className="border-b border-stone-200 pb-4">
-                <h2 className="font-serif text-2xl font-bold text-stone-900">Background</h2>
-                <p className="text-sm text-stone-600 mt-1 leading-relaxed max-w-3xl">
+            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-4 tab-panel-enter">
+              <div className="border-b border-fog-200 pb-4">
+                <h2 className="font-serif text-2xl font-bold text-asphalt-900">Background</h2>
+                <p className="text-sm text-fog-700 mt-1 leading-relaxed max-w-3xl">
                   Cloud market context and US electricity trends that frame why data center siting matters for the grid and for ratepayers.
                 </p>
                 <nav className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => setActiveTab('plan')} className="underline text-stone-700 hover:text-stone-900">← Plan a site</button>
-                  <button type="button" onClick={() => setActiveTab('how-it-works')} className="underline text-stone-700 hover:text-stone-900">How it works →</button>
+                  <button type="button" onClick={() => setActiveTab('plan')} className="underline text-pacific-700 hover:text-pacific-800">← Plan a site</button>
+                  <button type="button" onClick={() => setActiveTab('how-it-works')} className="underline text-pacific-700 hover:text-pacific-800">How it works →</button>
                 </nav>
               </div>
 
-              <section className="bg-white border border-stone-200 rounded-lg p-5 shadow-sm space-y-4">
+              <section className="bg-white/95 border border-fog-200 rounded-lg p-5 shadow-sm space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-semibold text-stone-900 text-sm">Top cloud infrastructure providers (global)</h3>
+                  <h3 className="font-semibold text-asphalt-900 text-sm">Top cloud infrastructure providers (global)</h3>
                   <EvidenceBadge level="moderate" />
                 </div>
                 <p className="text-sm text-stone-600 leading-relaxed">
@@ -1966,19 +2211,19 @@
           )}
 
           {activeTab === 'how-it-works' && (
-            <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-4">
-              <div className="border-b border-stone-200 pb-4">
-                <h2 className="font-serif text-2xl font-bold text-stone-900">How it works</h2>
-                <p className="text-sm text-stone-600 mt-1 leading-relaxed max-w-3xl">
+            <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-4 tab-panel-enter">
+              <div className="border-b border-fog-200 pb-4">
+                <h2 className="font-serif text-2xl font-bold text-asphalt-900">How it works</h2>
+                <p className="text-sm text-fog-700 mt-1 leading-relaxed max-w-3xl">
                   Bill context, worked examples, and formulas behind the planner. Verify bill text at{' '}
-                  <a href="https://leginfo.legislature.ca.gov/" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">California Legislative Information</a>.
+                  <a href="https://leginfo.legislature.ca.gov/" target="_blank" rel="noopener noreferrer" className="underline text-pacific-700 hover:text-pacific-800">California Legislative Information</a>.
                 </p>
-                <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-stone-700">
-                  <a href="#how-bills" className="underline hover:text-stone-900">Bills</a>
-                  <a href="#how-policy" className="underline hover:text-stone-900">Real policy</a>
-                  <a href="#how-math" className="underline hover:text-stone-900">Worked example</a>
-                  <a href="#how-formulas" className="underline hover:text-stone-900">Formulas</a>
-                  <button type="button" onClick={() => setActiveTab('plan')} className="underline hover:text-stone-900">← Plan a site</button>
+                <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-pacific-700">
+                  <a href="#how-bills" className="underline hover:text-pacific-800">Bills</a>
+                  <a href="#how-policy" className="underline hover:text-pacific-800">Real policy</a>
+                  <a href="#how-math" className="underline hover:text-pacific-800">Worked example</a>
+                  <a href="#how-formulas" className="underline hover:text-pacific-800">Formulas</a>
+                  <button type="button" onClick={() => setActiveTab('plan')} className="underline hover:text-pacific-800">← Plan a site</button>
                 </nav>
               </div>
 
@@ -2010,16 +2255,16 @@
               ].map((item) => {
                 const rule = baselines.legislativeTriggers[item.key];
                 return (
-                  <article key={item.key} className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm space-y-2">
+                  <article key={item.key} className="bg-white/95 border border-fog-200 border-l-4 border-l-pacific-600 rounded-lg p-4 shadow-sm space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <h3 className="font-semibold text-stone-900 text-sm">{item.title}</h3>
-                        <p className="text-[10px] text-stone-400 mt-0.5">{item.billNote}</p>
+                        <h3 className="font-semibold text-asphalt-900 text-sm">{item.title}</h3>
+                        <p className="text-[10px] text-chaparral-600 mt-0.5 font-semibold uppercase tracking-wide">{item.billNote}</p>
                       </div>
                       <StatusBadge status={rule.status} />
                     </div>
-                    <p className="text-sm text-stone-600 leading-relaxed">{item.body}</p>
-                    <p className="text-xs text-stone-500 border-t border-stone-100 pt-2">{rule.statusNote}</p>
+                    <p className="text-sm text-fog-700 leading-relaxed">{item.body}</p>
+                    <p className="text-xs text-fog-700/80 border-t border-fog-100 pt-2">{rule.statusNote}</p>
                   </article>
                 );
               })}
@@ -2162,13 +2407,13 @@
             </main>
           )}
 
-          <footer className="no-print mt-auto border-t border-stone-200 bg-white py-5 text-center text-xs text-stone-500 space-y-1">
-            <p>{baselines.metadata.appTitle} · Updated {baselines.metadata.lastUpdated}</p>
+          <footer className="no-print mt-auto border-t border-asphalt-800 bg-asphalt-900 py-6 text-center text-xs text-fog-200 space-y-1.5">
+            <p className="text-white font-medium">{baselines.metadata.appTitle} · Updated {baselines.metadata.lastUpdated}</p>
             <p>
               Built by {baselines.metadata.authorName} ·{' '}
-              <a href={baselines.metadata.repoUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-700">View source on GitHub</a>
+              <a href={baselines.metadata.repoUrl} target="_blank" rel="noopener noreferrer" className="underline text-chaparral-500 hover:text-chaparral-100">View source on GitHub</a>
             </p>
-            <p className="text-[10px] text-stone-400">Not affiliated with PG&E, SCE, SDG&E, CPUC, CEC, or CAISO. Illustrative outputs only.</p>
+            <p className="text-[10px] text-fog-200/70">Not affiliated with PG&E, SCE, SDG&E, CPUC, CEC, or CAISO. Illustrative outputs only.</p>
           </footer>
         </div>
       );
