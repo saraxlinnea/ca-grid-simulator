@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-stone-50">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,7 +10,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://saraxlinnea.github.io/ca-grid-simulator/" />
   <link rel="canonical" href="https://saraxlinnea.github.io/ca-grid-simulator/" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><text x='16' y='22' text-anchor='middle' font-family='system-ui,sans-serif' font-size='11' font-weight='600' fill='%23ffffff'>CA</text></svg>" />
   <script>
     window.__showLoadError = function (message) {
       var el = document.getElementById('load-error');
@@ -21,7 +21,7 @@
       if (detail) detail.textContent = message;
     };
     window.__cdnLoadError = function (name) {
-      window.__showLoadError(name + ' failed to download. Check your internet connection and refresh.');
+      window.__showLoadError(name + ' failed to load from vendor/. Ensure vendor/ scripts are present, then hard-refresh.');
     };
     window.addEventListener('error', function (event) {
       if (event.message) window.__showLoadError(event.message);
@@ -31,74 +31,450 @@
       window.__showLoadError(reason);
     });
   </script>
-  <script src="https://cdn.tailwindcss.com/3.4.17" onerror="window.__cdnLoadError('Tailwind CSS')"></script>
+  <script src="vendor/tailwindcss.js" onerror="window.__cdnLoadError('Tailwind CSS')"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
-            serif: ['"Fraunces"', '"Source Serif 4"', 'Georgia', 'serif'],
-            mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
           },
           colors: {
-            fog: { 50: '#F3F5F7', 100: '#E7EBEE', 200: '#D0D7DE', 700: '#4A5560', 900: '#1C2429' },
-            pacific: { 50: '#E8F3F2', 100: '#D1E7E5', 600: '#1A6B66', 700: '#145552', 800: '#0F403E' },
-            chaparral: { 50: '#F7F1E4', 100: '#EDE2C8', 500: '#C4A35A', 600: '#A8873F', 700: '#8A6C32' },
-            asphalt: { 800: '#243038', 900: '#161D22', 950: '#0E1317' },
+            fog: { 50: '#f7f9f8', 100: '#eef2f1', 200: '#d8e0de', 700: '#5a6562', 900: '#0a0a0a' },
+            pacific: { 50: '#e8f3f2', 100: '#c5e0dd', 600: '#1a6b66', 700: '#155652', 800: '#0f403d' },
+            chaparral: { 50: '#f7f6f2', 100: '#ebe8df', 500: '#8a7a5c', 600: '#6e6249', 700: '#3d3830' },
+            asphalt: { 800: '#161d22', 900: '#0a0a0a', 950: '#050708' },
+          },
+          maxWidth: {
+            archive: '1280px',
           },
         },
       },
     };
   </script>
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin onerror="window.__cdnLoadError('React')"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin onerror="window.__cdnLoadError('ReactDOM')"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js" onerror="window.__cdnLoadError('Babel')"></script>
+  <script src="vendor/react.production.min.js" crossorigin onerror="window.__cdnLoadError('React')"></script>
+  <script src="vendor/react-dom.production.min.js" crossorigin onerror="window.__cdnLoadError('ReactDOM')"></script>
+  <script src="vendor/babel.min.js" onerror="window.__cdnLoadError('Babel')"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     :root {
-      --fog: #F3F5F7;
-      --fog-deep: #E7EBEE;
-      --pacific: #1A6B66;
-      --chaparral: #C4A35A;
-      --asphalt: #161D22;
-      --ink: #1C2429;
+      --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --canvas-bg: #f4f7f6;
+      --text-primary: #0a0a0a;
+      --text-muted: #5a6562;
+      --rule: #d8e0de;
+      --max: 1280px;
+      --gap: clamp(1.5rem, 4vw, 3rem);
+      --fog: #f7f9f8;
+      --fog-deep: #eef2f1;
+      --pacific: #1a6b66;
+      --chaparral: #8a7a5c;
+      --asphalt: #0a0a0a;
+      --ink: #0a0a0a;
+      --accent: #1a6b66;
+      --water-high: #2a6f97;
+      --water-med: #5c6b73;
+      --water-low: #8a7a5c;
     }
     body {
-      font-family: 'Source Sans 3', system-ui, sans-serif;
-      color: var(--ink);
-      background-color: var(--fog);
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background-color: var(--canvas-bg);
     }
     .site-atmosphere {
-      background-color: var(--fog);
-      background-image:
-        linear-gradient(180deg, rgba(22, 29, 34, 0.04) 0%, transparent 28%),
-        linear-gradient(90deg, rgba(26, 107, 102, 0.04) 1px, transparent 1px),
-        linear-gradient(rgba(22, 29, 34, 0.035) 1px, transparent 1px);
-      background-size: auto, 48px 48px, 48px 48px;
-      background-position: 0 0, -1px -1px, -1px -1px;
+      background-color: var(--canvas-bg);
     }
     .header-sheen {
-      background:
-        linear-gradient(135deg, rgba(196, 163, 90, 0.14) 0%, transparent 42%),
-        linear-gradient(180deg, #1c2830 0%, #161D22 100%);
+      position: relative;
+      isolation: isolate;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--rule);
+      background: transparent;
     }
-    .metric-pulse {
-      animation: metricIn 280ms ease-out;
+    .header-sheen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image: url("images/ca-fog-field-oxnard.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: saturate(0.55) contrast(1.05);
+      opacity: 0.72;
     }
-    @keyframes metricIn {
-      from { opacity: 0.35; transform: translateY(3px); }
-      to { opacity: 1; transform: translateY(0); }
+    .header-sheen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(
+        105deg,
+        rgba(244, 247, 246, 0.94) 0%,
+        rgba(244, 247, 246, 0.82) 42%,
+        rgba(244, 247, 246, 0.55) 100%
+      );
     }
-    .tab-panel-enter {
-      animation: panelIn 320ms ease-out;
+    .product-hero {
+      position: relative;
+      isolation: isolate;
+      border-bottom: 1px solid var(--rule);
+      padding: clamp(2rem, 5vw, 3.25rem) 1.5rem clamp(1.75rem, 4vw, 2.75rem);
+      color: var(--text-primary);
     }
-    @keyframes panelIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+    .product-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image: url("images/ca-fog-field-oxnard.jpg");
+      background-size: cover;
+      background-position: center 40%;
+      filter: saturate(0.55) contrast(1.06);
+      opacity: 0.78;
+    }
+    .product-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(
+        100deg,
+        rgba(244, 247, 246, 0.96) 0%,
+        rgba(244, 247, 246, 0.88) 38%,
+        rgba(244, 247, 246, 0.5) 100%
+      );
+    }
+    .product-hero h1 {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      max-width: 18ch;
+      color: var(--asphalt);
+    }
+    .product-hero .hero-hook {
+      margin-top: 0.85rem;
+      font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      max-width: 36rem;
+      color: var(--pacific);
+    }
+    .product-hero .hero-support {
+      margin-top: 0.65rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      max-width: 34rem;
+      color: var(--text-muted);
+    }
+    .product-hero .hero-ctas {
+      margin-top: 1.35rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+    .product-hero .hero-cta-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 1.15rem;
+      background: var(--pacific);
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: 1px solid var(--pacific);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .product-hero .hero-cta-primary:hover {
+      background: #155652;
+      border-color: #155652;
+    }
+    .product-hero .hero-cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 1.15rem;
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--asphalt);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: 1px solid var(--rule);
+      cursor: pointer;
+    }
+    .product-hero .hero-cta-secondary:hover {
+      border-color: var(--pacific);
+      color: var(--pacific);
+    }
+    details > summary {
+      list-style: none;
+    }
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+    .scorecard-flash .sc-metric,
+    .scorecard-flash .font-mono.font-bold {
+      animation: scoreFlash 0.9s ease;
+    }
+    @keyframes scoreFlash {
+      0% { background-color: rgba(26, 107, 102, 0.28); }
+      100% { background-color: transparent; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scorecard-flash .sc-metric,
+      .scorecard-flash .font-mono.font-bold {
+        animation: none;
+      }
     }
     .range-ca {
-      accent-color: #1A6B66;
+      accent-color: var(--text-primary);
+    }
+    .mw-slider-wrap {
+      position: relative;
+      padding-top: 1.1rem;
+    }
+    .mw-slider-bands {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1.35rem;
+      height: 0.5rem;
+      border: 1px solid var(--rule);
+      pointer-events: none;
+      background: linear-gradient(
+        to right,
+        #e5e5e5 0%,
+        #e5e5e5 var(--mw-t1, 0.3%),
+        #9a9a9a var(--mw-t1, 0.3%),
+        #9a9a9a var(--mw-t2, 16.6%),
+        #0a0a0a var(--mw-t2, 16.6%),
+        #0a0a0a 100%
+      );
+    }
+    .mw-slider-wrap input[type="range"] {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      margin: 0;
+      background: transparent;
+      height: 1.25rem;
+    }
+    .mw-slider-wrap input[type="range"]::-webkit-slider-runnable-track {
+      height: 0.5rem;
+      background: transparent;
+      border: none;
+    }
+    .mw-slider-wrap input[type="range"]::-moz-range-track {
+      height: 0.5rem;
+      background: transparent;
+      border: none;
+    }
+    .mw-slider-wrap input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 0;
+      background: #fff;
+      border: 2px solid #0a0a0a;
+      margin-top: -4px;
+      cursor: pointer;
+    }
+    .mw-slider-wrap input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 0;
+      background: #fff;
+      border: 2px solid #0a0a0a;
+      cursor: pointer;
+    }
+    .mw-slider-tick {
+      position: absolute;
+      top: 0.15rem;
+      transform: translateX(-50%);
+      z-index: 3;
+      pointer-events: none;
+      text-align: center;
+    }
+    .mw-slider-tick::after {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 1.35rem;
+      margin: 0.15rem auto 0;
+      background: #0a0a0a;
+    }
+    .mw-slider-tick span {
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .mw-zone-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem 1rem;
+      margin-top: 0.5rem;
+    }
+    .mw-zone-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+    }
+    .mw-zone-swatch {
+      width: 0.7rem;
+      height: 0.7rem;
+      border: 1px solid var(--rule);
+      flex-shrink: 0;
+    }
+    .utility-map-wrap {
+      border: 1px solid var(--rule);
+      background: #fff;
+      padding: 0.75rem;
+      display: grid;
+      grid-template-columns: minmax(120px, 0.9fr) minmax(140px, 1.1fr);
+      gap: 0.55rem 0.9rem;
+      align-items: start;
+    }
+    .utility-map-visual {
+      min-width: 0;
+    }
+    .utility-map {
+      width: 100%;
+      max-width: 220px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .utility-map .territory {
+      cursor: pointer;
+      transition: fill 120ms ease, stroke-width 120ms ease, opacity 120ms ease;
+      stroke-linejoin: round;
+      fill-rule: evenodd;
+    }
+    .utility-map .territory:focus {
+      outline: 2px solid #0a0a0a;
+      outline-offset: 2px;
+    }
+    .utility-map .territory[data-active="false"] {
+      opacity: 0.88;
+      stroke: #fff;
+      stroke-width: 0.35;
+    }
+    .utility-map .territory[data-active="false"]:hover {
+      opacity: 1;
+    }
+    .utility-map .territory[data-active="true"] {
+      opacity: 1;
+      stroke: #0a0a0a;
+      stroke-width: 1.1;
+    }
+    .utility-map .ca-base {
+      fill: #f0f0f0;
+      stroke: none;
+      pointer-events: none;
+    }
+    .utility-map .ca-outline {
+      fill: none;
+      stroke: #0a0a0a;
+      stroke-width: 0.9;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .utility-map-selected {
+      margin: 0.45rem 0 0;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .utility-map-selected strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .utility-map-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-top: 0;
+      min-width: 0;
+      max-height: 22rem;
+      overflow-y: auto;
+    }
+    .utility-map-legend button {
+      display: grid;
+      grid-template-columns: 0.65rem 1fr auto;
+      gap: 0.45rem;
+      align-items: start;
+      text-align: left;
+      font-size: 0.75rem;
+      line-height: 1.25;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid var(--rule);
+      background: #fff;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    .utility-map-legend button .swatch {
+      width: 0.65rem;
+      height: 0.65rem;
+      margin-top: 0.15rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+    .utility-map-legend button .legend-main {
+      min-width: 0;
+    }
+    .utility-map-legend button .legend-title {
+      display: block;
+      font-weight: 600;
+    }
+    .utility-map-legend button .legend-meta {
+      display: block;
+      font-size: 0.625rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-top: 0.1rem;
+    }
+    .utility-map-legend button .legend-kind {
+      font-size: 0.625rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      padding-top: 0.1rem;
+    }
+    .utility-map-legend button[data-active="true"] {
+      background: #0a0a0a;
+      color: #fff;
+      border-color: #0a0a0a;
+    }
+    .utility-map-legend button[data-active="true"] .legend-meta,
+    .utility-map-legend button[data-active="true"] .legend-kind {
+      color: #c8c8c8;
+    }
+    .utility-map-legend button:hover {
+      border-color: #0a0a0a;
+    }
+    .utility-map-note {
+      font-size: 0.625rem;
+      color: var(--text-muted);
+      margin-top: 0;
+      line-height: 1.35;
+      grid-column: 1 / -1;
+    }
+    @media (max-width: 520px) {
+      .utility-map-wrap {
+        grid-template-columns: 1fr;
+      }
+      .utility-map {
+        max-width: 200px;
+      }
+      .utility-map-legend {
+        max-height: none;
+      }
     }
     /* Keep dense planning content readable without enlarging chart labels. */
     .site-atmosphere .text-xs {
@@ -113,12 +489,368 @@
       font-size: 0.75rem !important;
       line-height: 1rem !important;
     }
+    /* Archive density: flatten soft cards into list/hairline panels. */
+    .site-atmosphere .rounded-md,
+    .site-atmosphere .rounded-lg {
+      border-radius: 0 !important;
+    }
+    .site-atmosphere .shadow,
+    .site-atmosphere .shadow-sm,
+    .site-atmosphere .shadow-md {
+      box-shadow: none !important;
+    }
     .section-kicker {
-      border-left: 4px solid var(--chaparral);
-      background: linear-gradient(90deg, rgba(247, 241, 228, 0.95), rgba(255, 255, 255, 0.55));
-      padding: 0.8rem 1rem;
-      border-radius: 0 0.5rem 0.5rem 0;
-      color: var(--asphalt);
+      border: none;
+      border-top: 1px solid var(--rule);
+      background: transparent;
+      padding: 1.25rem 0 0.35rem;
+      border-radius: 0;
+      color: var(--text-primary);
+    }
+    .section-kicker::before {
+      content: "· ";
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .section-kicker h2,
+    .section-kicker.h2 {
+      display: inline;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .archive-nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .archive-nav-tabs button {
+      padding: 0.65rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .archive-nav-tabs button:hover {
+      color: var(--text-primary);
+    }
+    .archive-nav-tabs button.is-active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+    .photo-band {
+      position: relative;
+      isolation: isolate;
+    }
+    .photo-band::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-size: cover;
+      background-position: center;
+      filter: saturate(0.48);
+      opacity: 0.55;
+    }
+    .photo-band::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.88) 0%,
+        rgba(250, 250, 250, 0.92) 35%,
+        rgba(255, 255, 255, 0.97) 100%
+      );
+    }
+    .photo-band--transmission::before {
+      background-image: url("images/ca-transmission-livermore.jpg");
+    }
+    .photo-band--fog-field::before {
+      background-image: url("images/ca-fog-field-oxnard.jpg");
+    }
+    .photo-band--coastal::before {
+      background-image: url("images/ca-coastal-fog-tamalpais.jpg");
+    }
+    .photo-band .content-panel {
+      background: rgba(255, 255, 255, 0.94);
+      border-top: 1px solid var(--rule);
+      padding: 1.25rem 0;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .metric-row > div {
+      border-right: 1px solid var(--rule);
+      background: transparent !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+    .metric-row > div:last-child {
+      border-right: none;
+    }
+    .metric-row + .metric-row {
+      border-top: none;
+    }
+    .sticky-scorecard {
+      transition: padding 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      border-left: 3px solid transparent;
+    }
+    .sticky-scorecard--compact {
+      padding: 0.85rem 1rem !important;
+      box-shadow: 0 6px 18px rgba(10, 26, 24, 0.08);
+      border-color: #d8e0de;
+      border-left-color: var(--accent);
+      background: #fff;
+    }
+    .sticky-scorecard-compact {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .sticky-scorecard-compact-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem 1rem;
+    }
+    .sticky-scorecard-compact-id {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.35rem 0.5rem;
+      min-width: 0;
+    }
+    .sticky-scorecard-compact-id .sc-utility-dot {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 999px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .sticky-scorecard-compact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .sticky-scorecard-compact-grid > div {
+      padding: 0.55rem 0.65rem;
+      border-right: 1px solid var(--rule);
+      min-width: 0;
+    }
+    .sticky-scorecard-compact-grid > div:nth-child(3n) {
+      border-right: none;
+    }
+    .sticky-scorecard-compact-grid .sc-label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.15rem;
+    }
+    .sticky-scorecard-compact-grid .sc-metric {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sticky-scorecard-compact-grid .sc-metric--text {
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+    }
+    .sc-water--high { color: var(--water-high); }
+    .sc-water--medium { color: var(--water-med); }
+    .sc-water--low { color: var(--water-low); }
+    @media (min-width: 900px) {
+      .sticky-scorecard-compact-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+      .sticky-scorecard-compact-grid > div {
+        border-right: 1px solid var(--rule);
+      }
+      .sticky-scorecard-compact-grid > div:nth-child(3n) {
+        border-right: 1px solid var(--rule);
+      }
+      .sticky-scorecard-compact-grid > div:last-child {
+        border-right: none;
+      }
+    }
+    @media (max-width: 640px) {
+      .sticky-scorecard-compact-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .sticky-scorecard-compact-grid > div:nth-child(3n) {
+        border-right: 1px solid var(--rule);
+      }
+      .sticky-scorecard-compact-grid > div:nth-child(2n) {
+        border-right: none;
+      }
+      .sticky-scorecard-compact-grid > div:nth-child(n+3) {
+        border-top: 1px solid var(--rule);
+      }
+    }
+    .scorecard-sentinel {
+      height: 1px;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+    .compare-panel {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-left: 3px solid var(--accent);
+    }
+    .compare-panel-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 768px) {
+      .compare-panel-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
+      .compare-panel-col + .compare-panel-col {
+        border-left: 1px solid var(--rule);
+        padding-left: 1rem;
+        margin-left: 0.25rem;
+      }
+      .compare-panel-col:first-child {
+        padding-right: 1rem;
+      }
+    }
+    .compare-metric-row {
+      display: grid;
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      gap: 0.35rem 0.75rem;
+      align-items: baseline;
+      padding: 0.35rem 0.4rem;
+      border-radius: 0;
+    }
+    .compare-metric-row.is-diff {
+      background: rgba(26, 107, 102, 0.08);
+    }
+    .compare-metric-row .cm-label {
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .compare-metric-row .cm-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+    }
+    .facility-type-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--rule);
+      background: #fff;
+      min-height: 0;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .facility-type-card[data-active="true"] {
+      border-color: var(--accent);
+      box-shadow: inset 3px 0 0 var(--pacific);
+      transform: translateY(-1px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .facility-type-card {
+        transition: none;
+      }
+      .facility-type-card[data-active="true"] {
+        transform: none;
+      }
+    }
+    .facility-type-card > button.select-type {
+      text-align: left;
+      padding: 0.85rem 1rem;
+      width: 100%;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      flex: 1;
+    }
+    .facility-type-card > button.select-type:hover {
+      background: var(--fog);
+    }
+    .facility-types-info {
+      border: 1px solid var(--rule);
+      background: #fff;
+    }
+    .facility-types-info > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      user-select: none;
+    }
+    .facility-types-info > summary::-webkit-details-marker {
+      display: none;
+    }
+    .facility-types-info > summary .caret {
+      color: var(--accent);
+      font-size: 0.5625rem;
+      transition: transform 0.15s ease;
+    }
+    .facility-types-info[open] > summary .caret {
+      transform: rotate(180deg);
+    }
+    .facility-types-info-body {
+      padding: 0 1rem 0.85rem;
+      border-top: 1px solid var(--rule);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sticky-scorecard {
+        transition: none;
+      }
+      .facility-types-info > summary .caret {
+        transition: none;
+      }
+    }
+    @media (max-width: 640px) {
+      .metric-row {
+        grid-template-columns: 1fr;
+      }
+      .metric-row > div {
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+      }
+      .metric-row > div:last-child {
+        border-bottom: none;
+      }
+    }
+    a {
+      transition: color 0.2s ease;
     }
     @media print {
       @page { margin: 0.75in; }
@@ -126,6 +858,10 @@
       .print-only { display: block !important; }
       body { background: #fff !important; color: #111 !important; }
       .site-atmosphere { background: #fff !important; }
+      .photo-band::before,
+      .photo-band::after,
+      .header-sheen::before,
+      .header-sheen::after { display: none !important; }
     }
     .print-only { display: none; }
   </style>
@@ -134,30 +870,104 @@
   <noscript>
     <p style="padding:1rem;color:#991b1b;background:#fef2f2;">JavaScript is required to run this planning tool.</p>
   </noscript>
-  <div id="load-error" role="alert" style="display:none;margin:1rem;padding:1rem;border:1px solid #f87171;background:#450a0a;color:#fecaca;border-radius:0.5rem;font-size:0.875rem;"></div>
+  <div id="load-error" role="alert" style="display:none;margin:1rem;padding:1rem;border:1px solid #e5e5e5;background:#fafafa;color:#0a0a0a;font-size:0.875rem;"></div>
   <div id="root" class="min-h-full flex flex-col">
-    <p style="padding:1.5rem;color:#78716c;">Loading scenario model…</p>
+    <p style="padding:1.5rem;color:#666666;">Loading scenario model…</p>
   </div>
 
   <script type="text/babel" data-presets="react,env">
-    const { useState, useMemo } = React;
+    const { useState, useMemo, useEffect, useRef } = React;
+    const MW_SLIDER_MIN = 0.1;
+    const MW_SLIDER_MAX = 150;
+
+    const COOLING_TO_CODE = {
+      'Evaporative Open-Loop': 'open',
+      'Closed-Loop Air Cooled': 'closed',
+      'Direct-to-Chip Liquid': 'liquid',
+    };
+    const CODE_TO_COOLING = {
+      open: 'Evaporative Open-Loop',
+      closed: 'Closed-Loop Air Cooled',
+      liquid: 'Direct-to-Chip Liquid',
+    };
+
+    function parseScenarioFromSearch(search) {
+      const raw = search.startsWith('?') ? search.slice(1) : search;
+      const params = new URLSearchParams(raw);
+      const defaults = baselines.industryContext.defaultInputs;
+      const presets = [
+        ...baselines.industryContext.scenarioPresets,
+        baselines.industryContext.stressTestPreset,
+      ];
+
+      let tab = params.get('tab');
+      if (tab !== 'plan' && tab !== 'how-it-works' && tab !== 'background') tab = 'plan';
+
+      const preset = presets.find((entry) => entry.id === params.get('preset'));
+      if (preset) {
+        return {
+          tab,
+          mw: preset.mw,
+          utility: preset.utilityCode,
+          cooling: preset.coolingType,
+          clean: preset.prefundCleanEnergy,
+        };
+      }
+
+      const mwRaw = Number.parseFloat(params.get('mw'));
+      const mw = Number.isFinite(mwRaw)
+        ? Math.min(MW_SLIDER_MAX, Math.max(MW_SLIDER_MIN, mwRaw))
+        : defaults.megawatts;
+      const utilityParam = params.get('utility');
+      const utility = UTILITY_CODES.includes(utilityParam)
+        ? utilityParam
+        : defaults.utilityCode;
+      const cooling = CODE_TO_COOLING[params.get('cooling')] || defaults.coolingType;
+      const cleanParam = params.get('clean');
+      let clean = defaults.prefundCleanEnergy;
+      if (cleanParam === '0') clean = false;
+      if (cleanParam === '1') clean = true;
+
+      return { tab, mw, utility, cooling, clean };
+    }
+
+    function buildScenarioSearch({ tab, mw, utility, cooling, clean, presetId }) {
+      const params = new URLSearchParams();
+      if (tab && tab !== 'plan') params.set('tab', tab);
+      if (presetId) {
+        params.set('preset', presetId);
+      } else {
+        const mwStr = mw % 1 === 0 ? String(mw) : mw.toFixed(1);
+        params.set('mw', mwStr);
+        params.set('utility', utility);
+        params.set('cooling', COOLING_TO_CODE[cooling] || 'closed');
+        params.set('clean', clean ? '1' : '0');
+      }
+      const query = params.toString();
+      return query ? `?${query}` : '';
+    }
 
     const baselines = {
       metadata: {
         jurisdiction: 'California',
-        lastUpdated: 'July 2026',
+        lastUpdated: 'August 2026',
         disclaimer: 'Not legal, regulatory, or utility advice.',
         topBarBriefing: 'A free planning tool for California data center siting. Compare grid upgrade cost allocation, permitting timelines, and reporting under simplified bill-inspired scenarios. Numbers are illustrative estimates, not real bills or utility quotes.',
         appEyebrow: 'California · Grid & siting',
         appTitle: 'California Data Center Siting Planner',
+        appTitleShort: 'CA Data Center Siting Planner',
+        appHeroHook: 'Who pays for the upgrade, how long permitting takes, and what reporting kicks in.',
+        appHeroSupport: 'A free planning sandbox for California data center siting under bill-inspired scenarios, not utility quotes or legal advice.',
         appSubtitle: 'Set facility size, utility territory, and cooling. Compare grid upgrade cost allocation, permitting months, and disclosure under three bill-inspired scenarios. Figures are illustrative, not quotes from utilities or agencies.',
         modeledScenarioDefinition: 'A modeled estimate borrows ideas from real California bills, simplifies them, and runs the math so you can compare options. It is not a statement of current law.',
         sources: [
           { label: 'CEC Integrated Energy Policy Report (demand forecast references)', url: 'https://www.energy.ca.gov/data-reports/reports/integrated-energy-policy-report' },
           { label: 'CAISO interconnection queue and planning', url: 'https://www.caiso.com/planning/Pages/GeneratorInterconnection/Default.aspx' },
-          { label: 'CPUC proceedings and tariffs (cost allocation concepts)', url: 'https://www.cpuc.ca.gov/' },
+          { label: 'CPUC R.26-04-009: Advanced Electric Rate Design (large-load / data-center rate design)', url: 'https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M604/K677/604677976.PDF' },
           { label: 'California bill text and status', url: 'https://leginfo.legislature.ca.gov/' },
           { label: 'SB 57 (Padilla, 2025): CPUC data-center cost-impact assessment', url: 'https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB57' },
+          { label: 'Public Advocates Office: data center growth and California ratepayers', url: 'https://www.publicadvocates.cpuc.ca.gov/press-room/commentary/251027-how-will-data-center-growth-impact-california-ratepayers' },
+          { label: 'LBNL Center of Expertise: data center water efficiency (WUE context)', url: 'https://datacenters.lbl.gov/water-efficiency' },
           { label: 'JLL 2026 Global Data Center Outlook (build cost per MW)', url: 'https://www.jll.com/en-us/insights/market-outlook/data-center-outlook' },
           { label: 'CBRE North America Data Center Trends H2 2025 (colocation pricing)', url: 'https://www.cbre.com/insights/books/north-america-data-center-trends-h2-2025' },
           { label: 'Uptime Institute Global Data Center Survey 2025 (PUE)', url: 'https://uptimeinstitute.com/about-ui/press-releases/uptimes-15th-annual-global-data-center-survey-results-shows-both-commitment-and-hesitancy' },
@@ -363,12 +1173,12 @@
         buildTrendNote: 'New capacity is increasingly driven by AI and GPU cloud. Hyperscalers (AWS, Azure, Google Cloud) dominate large builds; colocation still serves multi-tenant demand. California load forecasts and interconnection queues are rising because a single campus can equal tens of thousands of homes in annual electricity use.',
       },
       modelAssumptions: [
-        'Grid upgrade cost scales linearly with facility MW using one territory-wide $/MW placeholder per utility, not a site-specific interconnection study.',
-        'Each facility sits entirely within a single investor-owned utility territory (PG&E, SDG&E, or SCE).',
+        'Grid upgrade cost scales linearly with facility MW using one territory-wide $/MW scenario knob per LSE, not a site-specific interconnection study.',
+        'Each facility sits entirely within a single selected LSE territory (IOU or major POU).',
         'SB 886, SB 887, and AB 1577 scenarios use fixed thresholds (25 MW, 0.5 MW) and simplified rules that do not track bill amendments or enactment status.',
         'CEQA permitting and utility interconnection run on independent clocks in this model, though they overlap in practice.',
         'Clean power commitment is modeled as a flat annual PPA cost ($75,000 per matched MW-year) for 15 years when the SB 886 threshold applies.',
-        'Below 25 MW, the developer pays 75% of placeholder upgrade cost and ratepayers 25%; at or above 25 MW, the developer pays 100%.',
+        'Below 25 MW, the developer pays 75% of placeholder upgrade cost and 25% is residual to other customers on the utility rate base (residential vs C&I class split not modeled); at or above 25 MW, the developer pays 100%.',
         'CEQA timeline uses a 36-month baseline, 12-month fast path, and 12-month penalty for open-loop evaporative cooling only.',
         'Facility economics use uniform load factor and PUE across the year with no seasonal or diurnal variation.',
         'Build cost per MW, energy price, and colocation revenue are user-adjustable placeholders benchmarked to published 2025-2026 industry reports; see the per-input source notes on the Plan tab.',
@@ -382,8 +1192,23 @@
       ],
       usElectricity: {
         sourceUrl: 'https://www.eia.gov/electricity/annual/html/epa_02_02.html',
-        sourceLabel: 'EIA Table 2.2 total retail sales (billion kWh)',
+        sourceLabel: 'EIA Table 2.2 total retail sales (billion kWh); 2000–2005 from AER Table 8.9',
+        sourceNote: 'Retail sales to ultimate customers (not generation). 2020 commercial and industrial sales fell as businesses closed or slowed during COVID; residential rose slightly.',
+        covidYear: 2020,
+        covidLabel: '2020 · COVID demand dip',
         historical: [
+          // AER Table 8.9 Total Retail Sales (billion kWh), same retail-sales concept as Table 2.2
+          { year: 2000, billionKWh: 3421 },
+          { year: 2001, billionKWh: 3394 },
+          { year: 2002, billionKWh: 3465 },
+          { year: 2003, billionKWh: 3494 },
+          { year: 2004, billionKWh: 3547 },
+          { year: 2005, billionKWh: 3661 },
+          // Electric Power Annual Table 2.2 Total Electric Industry (MWh → billion kWh)
+          { year: 2006, billionKWh: 3670 },
+          { year: 2007, billionKWh: 3765 },
+          { year: 2008, billionKWh: 3734 },
+          { year: 2009, billionKWh: 3597 },
           { year: 2010, billionKWh: 3755 },
           { year: 2011, billionKWh: 3750 },
           { year: 2012, billionKWh: 3695 },
@@ -398,24 +1223,57 @@
           { year: 2021, billionKWh: 3806 },
           { year: 2022, billionKWh: 3927 },
           { year: 2023, billionKWh: 3874 },
-          { year: 2024, billionKWh: 3962 },
+          { year: 2024, billionKWh: 3975 },
         ],
       },
       utilityBaselines: {
         PGE: {
           name: 'Pacific Gas & Electric territory',
+          kind: 'IOU',
           estimatedGridUpgradeCostPerMW: 250000,
+          costEvidence: 'speculative',
+          costNote: 'Scenario knob for comparing territories — not a PG&E interconnection quote. Ordering vs other LSEs is illustrative only.',
           regionalBrief: 'Illustrative Northern California placeholder. Real upgrade costs depend on substation location, voltage, and study results. These figures are not from any utility interconnection estimate.',
         },
         SDGE: {
           name: 'San Diego Gas & Electric territory',
+          kind: 'IOU',
           estimatedGridUpgradeCostPerMW: 410000,
+          costEvidence: 'speculative',
+          costNote: 'Scenario knob (higher illustrative placeholder for a constrained coastal territory). Not an SDG&E study quote.',
           regionalBrief: 'Illustrative San Diego region placeholder. Use for comparison only, not as a utility quote.',
         },
         SCE: {
           name: 'Southern California Edison territory',
+          kind: 'IOU',
           estimatedGridUpgradeCostPerMW: 180000,
+          costEvidence: 'speculative',
+          costNote: 'Scenario knob for comparing territories — not an SCE interconnection quote. Actual costs vary widely by site.',
           regionalBrief: 'Illustrative Southern California placeholder. Actual interconnection costs vary widely by site.',
+        },
+        LADWP: {
+          name: 'Los Angeles Department of Water & Power',
+          kind: 'POU',
+          estimatedGridUpgradeCostPerMW: 220000,
+          costEvidence: 'speculative',
+          costNote: 'Scenario knob only. SB 886-style cost allocation is illustrative here — LADWP is a municipal utility, not under the modeled IOU tariff frame.',
+          regionalBrief: 'Municipal utility (POU). SB 886-style cost allocation here is an illustrative placeholder for comparison — LADWP is not under the same IOU tariff framework.',
+        },
+        SMUD: {
+          name: 'Sacramento Municipal Utility District',
+          kind: 'POU',
+          estimatedGridUpgradeCostPerMW: 200000,
+          costEvidence: 'speculative',
+          costNote: 'Scenario knob only. Not SMUD rates or board policy; SB 886-style share math is for comparison across LSEs.',
+          regionalBrief: 'Municipal utility (POU). Grid $/MW and cost-share math are illustrative placeholders for planning comparison, not SMUD rates or board policy.',
+        },
+        SVP: {
+          name: 'Silicon Valley Power (Santa Clara)',
+          kind: 'POU',
+          estimatedGridUpgradeCostPerMW: 280000,
+          costEvidence: 'speculative',
+          costNote: 'Scenario knob only. Not a Silicon Valley Power quote; POU interconnection rules differ from the modeled IOU tariff.',
+          regionalBrief: 'Municipal utility (POU) serving Santa Clara. Figures are illustrative placeholders for comparison — not Silicon Valley Power quotes.',
         },
       },
       legislativeTriggers: {
@@ -892,6 +1750,63 @@
       return { annualMWh, homesEquivalent, usSharePercent };
     }
 
+    // Illustrative site footprint range (acres/MW). Not geometry- or zoning-specific.
+    const LAND_ACRES_PER_MW = { low: 0.8, high: 2.0 };
+
+    function estimateLandAcres(megawatts) {
+      const mw = Number(megawatts) || 0;
+      return {
+        low: mw * LAND_ACRES_PER_MW.low,
+        high: mw * LAND_ACRES_PER_MW.high,
+      };
+    }
+
+    // Cooling → relative water intensity band (WUE framing). Not site gallons.
+    function estimateWaterBand(coolingType) {
+      if (coolingType === 'Evaporative Open-Loop') {
+        return {
+          level: 'high',
+          label: 'High',
+          note: 'Open-loop evaporative cooling typically has the highest on-site water use among these options.',
+        };
+      }
+      if (coolingType === 'Direct-to-Chip Liquid') {
+        return {
+          level: 'medium',
+          label: 'Medium',
+          note: 'Chip liquid loops cut evaporative loss, but heat rejection and site loops can still use water.',
+        };
+      }
+      return {
+        level: 'low',
+        label: 'Low',
+        note: 'Closed-loop air cooling usually uses the least on-site water; electricity use for fans/chillers rises instead.',
+      };
+    }
+
+    function buildCompareSnapshot(mw, utilityCode, coolingType, prefundCleanEnergy, loadFactor, pue) {
+      const sb886 = calculateSB886Tariff(mw, utilityCode);
+      const ceqa = calculateCEQATimeline(coolingType, prefundCleanEnergy, mw >= 25);
+      const ab1577 = calculateAB1577Burden(mw);
+      const energy = getEnergyScale(mw, loadFactor, pue);
+      const land = estimateLandAcres(mw);
+      const water = estimateWaterBand(coolingType);
+      return {
+        mw,
+        utilityCode,
+        coolingType,
+        prefundCleanEnergy,
+        developerShare: sb886?.developerShare ?? null,
+        timelineMonths: ceqa.timelineMonths,
+        disclosureLabel: ab1577.isTriggered ? 'Monthly reporting' : 'No reporting',
+        gwh: energy.annualMWh / 1000,
+        landLow: land.low,
+        landHigh: land.high,
+        waterLevel: water.level,
+        waterLabel: water.label,
+      };
+    }
+
     function buildWorkedExample(mw, utilityCode, coolingType, prefundCleanEnergy, econAssumptions) {
       const utility = baselines.utilityBaselines[utilityCode];
       const sb886 = calculateSB886Tariff(mw, utilityCode);
@@ -913,7 +1828,7 @@
           `Total placeholder upgrade = ${mw} MW x $${utility?.estimatedGridUpgradeCostPerMW.toLocaleString()}/MW = $${sb886?.totalGridUpgradeCost.toLocaleString()}`,
           mw >= rules886.transmissionServiceThreshold_MW
             ? `At or above ${rules886.transmissionServiceThreshold_MW} MW: developer pays 100% = $${sb886?.developerShare.toLocaleString()}`
-            : `Below ${rules886.transmissionServiceThreshold_MW} MW: developer pays 75% = $${sb886?.developerShare.toLocaleString()}, ratepayers $${sb886?.ratepayerShare.toLocaleString()}`,
+            : `Below ${rules886.transmissionServiceThreshold_MW} MW: developer pays 75% = $${sb886?.developerShare.toLocaleString()}, residual to other customers / rate base $${sb886?.ratepayerShare.toLocaleString()}`,
           'Grid upgrades cover substations, transformers, and lines to serve a new large load. Costs vary by site; these are illustrative placeholders.',
         ]},
         { label: 'SB 887 permitting (modeled months)', lines: [
@@ -949,13 +1864,214 @@
       ];
     }
 
-    const MW_SLIDER_MIN = 0.1;
-    const MW_SLIDER_MAX = 150;
+    // CA outline + LSE polygons simplified offline from CEC Electric Load Serving Entities (IOU & POU).
+    // IOU fills have major munis subtracted; LADWP / SMUD / SVP embedded as selectable POUs. Static — not fetched at runtime.
+    // Geometry: https://cecgis-caenergy.opendata.arcgis.com/datasets/CAEnergy::electric-load-serving-entities-iou-pou
+    // Sales: EIA-861 2024 (see UTILITY_SALES_NOTE); CEC LSE Sales_GWh_2024 still null in that extract.
+    const CA_OUTLINE_VIEWBOX = '0 0 100 92.19';
+    const CA_OUTLINE_PATH =
+      'M5.14 6.87 L4.38 4.5 L3.36 3.89 L3.78 1.88 L43.18 1.91 L43.17 29.93 L66.56 46.58 L93.39 67.33 L93.38 68.57 L94.95 70.23 L96.13 72.48 L97.65 73.44 L98.08 74.27 L95.25 75.88 L94.46 77.48 L94.68 79.44 L94.3 80.74 L93.44 82.0 L92.56 82.35 L93.02 83.64 L92.69 85.21 L94.92 86.32 L94.66 87.72 L93.55 88.6 L70.07 90.42 L69.66 89.13 L68.94 89.15 L68.29 85.18 L66.85 83.29 L60.64 79.01 L59.47 79.48 L58.04 79.12 L58.22 78.19 L57.03 76.45 L54.35 76.69 L51.31 75.77 L50.51 75.34 L49.92 74.21 L47.3 72.84 L44.35 72.88 L41.86 72.27 L38.77 72.51 L38.39 71.81 L37.21 71.41 L37.56 70.11 L37.21 69.63 L37.47 68.68 L36.9 68.25 L37.15 66.04 L35.17 65.42 L34.79 65.03 L34.9 63.32 L33.79 63.04 L32.26 61.4 L31.15 61.04 L29.11 57.99 L25.51 55.16 L25.1 52.76 L24.67 52.56 L25.06 52.04 L25.77 52.28 L26.2 51.61 L26.45 50.47 L25.75 49.28 L25.12 48.84 L23.47 49.05 L20.68 46.81 L20.72 45.28 L19.63 43.76 L19.65 41.33 L20.74 41.1 L21.13 41.81 L20.79 42.02 L20.92 42.97 L23.42 43.89 L22.94 42.39 L21.37 41.31 L21.57 40.29 L20.44 39.63 L21.81 39.07 L21.91 38.59 L20.76 37.88 L19.88 38.23 L19.81 39.1 L20.27 39.43 L19.76 39.95 L20.37 40.4 L19.74 40.95 L17.66 40.18 L16.21 39.05 L14.88 39.33 L15.59 37.84 L15.32 36.78 L14.51 36.46 L13.9 35.07 L12.01 33.99 L8.32 30.7 L8.65 29.64 L7.42 26.71 L7.94 24.76 L7.14 22.14 L4.72 19.6 L2.36 18.13 L1.92 16.47 L4.47 11.91 L4.71 10.95 L4.21 10.0 Z';
 
-    const MW_POLICY_THRESHOLDS = [
-      { mw: 0.5, label: '0.5 MW', note: 'reporting turns on' },
-      { mw: 25, label: '25 MW', note: 'full developer cost share' },
+    const UTILITY_SALES_NOTE = 'Retail sales from EIA Form EIA-861 (2024). IOUs = bundled + delivery MWh; POUs = bundled. CEC LSE Sales_GWh_2024 still unpublished in that extract.';
+
+    const UTILITY_MAP_REGIONS = [
+      {
+        id: 'PGE',
+        short: 'PG&E',
+        title: 'PG&E · Northern & Central California',
+        kind: 'IOU',
+        salesTWh: 74.2,
+        salesYear: 2024,
+        color: '#5b8fc7',
+        path: 'M16.74 38.43 L14.03 35.08 L8.3 30.69 L7.16 22.18 L2.35 18.14 L2.13 15.8 L3.47 13.42 L3.77 14.26 L4.98 12.8 L4.33 12.47 L3.51 13.38 L4.79 11.05 L4.21 10.0 L5.15 6.87 L10.53 7.68 L11.29 9.53 L10.92 11.74 L9.27 11.88 L10.02 20.79 L15.73 20.78 L14.5 17.34 L17.96 15.22 L17.43 14.12 L18.61 12.35 L24.99 12.39 L25.05 9.5 L32.62 9.49 L32.84 11.24 L37.17 11.25 L37.18 13.49 L30.82 13.45 L30.75 16.41 L33.25 16.39 L33.25 18.17 L34.49 18.78 L36.02 17.62 L38.05 18.1 L38.03 21.68 L34.24 20.59 L34.42 22.04 L38.03 23.04 L38.04 24.53 L40.3 24.52 L38.39 24.8 L38.4 25.67 L39.95 26.01 L43.34 33.06 L45.32 34.71 L47.43 34.72 L46.44 36.6 L47.96 37.94 L47.98 40.54 L52.23 42.74 L49.49 45.49 L48.73 47.78 L51.76 48.09 L51.77 46.88 L55.63 46.86 L58.51 49.69 L58.67 51.74 L56.95 52.53 L54.47 51.73 L51.93 52.63 L51.39 54.13 L49.46 53.55 L45.71 54.56 L48.6 57.25 L49.37 60.43 L54.28 61.17 L55.69 68.33 L54.28 69.05 L48.4 68.27 L48.4 69.85 L45.4 69.84 L45.07 71.53 L38.76 72.51 L37.09 71.3 L37.11 66.0 L35.16 65.42 L34.87 63.29 L31.15 61.14 L29.12 58.0 L25.38 55.13 L24.67 52.55 L25.87 52.18 L26.91 50.19 L20.77 46.94 L19.65 41.33 L20.72 41.09 L20.76 42.9 L23.24 43.93 L22.57 45.25 L23.2 45.89 L22.88 44.97 L24.37 44.27 L20.45 39.61 L22.18 38.74 L23.86 39.31 L27.29 39.22 L28.71 38.74 L27.42 38.47 L27.64 37.59 L33.44 36.6 L32.71 32.57 L29.83 31.57 L30.86 32.43 L28.18 32.4 L28.94 35.91 L26.33 38.69 L25.19 37.35 L23.94 37.81 L23.83 37.7 L24.13 37.5 L24.19 37.01 L23.17 38.91 L21.88 38.18 L21.81 36.65 L21.49 37.54 L20.5 37.14 L20.32 38.2 L18.49 36.98 L20.27 39.39 L19.36 39.74 L20.37 40.38 L19.51 40.26 L19.79 40.97 L15.78 38.43 L14.89 39.33 L15.16 37.03 Z M36.95 43.73 L39.72 42.76 L39.73 42.12 L34.51 38.56 L34.51 39.51 L32.51 40.03 L32.48 41.35 L31.03 41.83 L32.74 43.57 L29.59 44.93 L29.9 45.81 L31.32 46.01 L33.79 44.78 L34.1 45.41 L37.22 45.68 L37.45 46.36 L41.2 46.51 L38.82 44.87 L38.25 45.53 L37.72 45.01 L38.49 44.4 L36.94 44.58 Z M37.63 44.0 L37.61 44.25 L38.57 43.86 Z M38.1 46.9 L37.8 46.5 L37.97 46.9 Z M24.43 45.11 L25.1 45.47 L24.77 44.73 Z M21.9 15.98 L21.45 14.27 L20.27 14.89 L20.36 15.94 Z M38.87 42.4 L38.26 42.77 L38.71 42.39 Z M32.76 43.25 L32.31 42.92 L32.36 42.89 Z',
+      },
+      {
+        id: 'SCE',
+        short: 'SCE',
+        title: 'SCE · Southern California',
+        kind: 'IOU',
+        salesTWh: 80.4,
+        salesYear: 2024,
+        color: '#d4893a',
+        path: 'M61.39 42.79 L61.1 44.3 L64.87 45.33 L91.16 65.54 L90.27 71.51 L95.54 71.42 L98.08 74.25 L94.31 77.29 L94.4 80.88 L92.52 82.28 L92.95 84.53 L91.87 83.72 L91.89 82.0 L86.51 81.26 L86.55 80.49 L83.71 78.09 L82.63 78.05 L82.72 76.37 L76.88 76.4 L77.6 82.06 L76.94 80.05 L74.2 79.5 L72.4 79.63 L72.99 82.18 L68.98 82.02 L66.47 81.33 L66.9 80.5 L64.54 80.51 L64.25 81.35 L63.13 79.97 L62.48 80.25 L63.01 80.55 L61.76 79.85 L61.21 79.12 L60.76 79.17 L60.91 78.88 L59.09 78.6 L60.29 75.63 L61.25 75.3 L59.66 74.07 L56.42 73.86 L55.64 75.05 L56.61 76.33 L54.34 76.7 L50.51 75.36 L50.05 74.26 L47.27 72.83 L40.42 72.3 L45.07 71.53 L45.4 69.84 L48.4 69.85 L48.4 68.27 L54.28 69.05 L55.81 68.15 L54.28 61.17 L49.37 60.43 L48.6 57.25 L45.71 54.56 L49.46 53.55 L51.39 54.13 L51.93 52.63 L54.8 51.71 L56.95 52.53 L58.27 51.56 L60.6 54.08 L61.22 56.75 L63.23 56.78 L65.59 55.26 L64.33 53.64 L62.96 53.6 L61.0 46.42 L61.51 45.43 L59.7 45.46 L59.65 44.31 L56.48 44.31 L58.5 44.65 L58.99 47.06 L51.77 46.88 L51.76 48.09 L48.73 47.78 L49.49 45.49 L52.32 43.16 L51.46 41.83 L47.98 40.54 L47.96 37.94 L46.44 36.6 L47.43 34.72 L50.38 34.93 Z M68.39 76.76 L66.35 77.12 L66.59 77.8 L68.51 77.75 Z M61.72 78.48 L64.95 77.98 L62.06 78.03 Z',
+      },
+      {
+        id: 'SDGE',
+        short: 'SDG&E',
+        title: 'SDG&E · San Diego region',
+        kind: 'IOU',
+        salesTWh: 16.7,
+        salesYear: 2024,
+        color: '#3d9a8c',
+        path: 'M66.47 81.33 L67.85 81.33 L68.98 82.02 L78.66 82.05 L78.66 84.22 L77.94 84.53 L77.94 85.67 L79.4 86.76 L79.54 89.63 L70.07 90.42 L69.85 89.37 L69.12 88.9 L69.68 88.88 L70.16 89.81 L70.16 89.1 L69.29 88.48 L69.04 88.71 L69.0 89.19 L68.85 88.87 L68.88 88.34 L68.9 88.36 L69.21 88.32 L69.32 88.29 L68.82 88.34 L69.27 88.24 L69.28 87.98 L68.81 88.32 L68.61 87.72 L68.85 86.32 L68.31 85.25 L68.7 85.21 L68.3 85.24 L67.48 83.85 L64.25 81.36 L64.54 80.51 L66.86 80.56 Z',
+      },
+      {
+        id: 'LADWP',
+        short: 'LADWP',
+        title: 'LADWP · Los Angeles',
+        kind: 'POU',
+        salesTWh: 21.3,
+        salesYear: 2024,
+        color: '#c75b5b',
+        path: 'M59.7 45.46 L61.51 45.43 L61.0 46.42 L62.96 53.6 L64.33 53.64 L65.59 55.26 L63.23 56.78 L61.22 56.75 L61.33 56.4 L60.69 55.37 L60.95 54.76 L60.36 54.35 L60.6 54.08 L59.88 53.93 L59.65 53.1 L59.16 52.76 L59.32 52.41 L58.46 51.53 L58.74 51.29 L58.2 50.23 L58.51 49.69 L57.8 48.08 L56.4 47.47 L58.99 47.06 L59.34 46.68 L58.5 44.65 L56.98 44.7 L56.48 44.31 L59.65 44.31 Z M58.1 73.62 L58.09 74.03 L59.66 74.07 L59.39 74.63 L58.5 74.71 L58.54 75.19 L59.26 75.24 L59.51 75.59 L60.03 75.29 L60.43 75.78 L60.01 76.18 L60.09 76.6 L59.49 76.8 L59.73 77.37 L59.24 77.42 L59.09 78.6 L59.82 78.74 L59.27 78.87 L59.29 79.44 L58.77 79.3 L59.07 78.97 L59.16 77.08 L58.95 77.28 L58.53 76.88 L58.78 76.68 L58.43 76.38 L57.94 76.61 L57.7 76.79 L58.15 76.69 L58.47 77.36 L57.87 77.35 L58.02 77.79 L57.6 77.07 L57.92 76.89 L57.69 77.02 L57.58 77.07 L57.71 77.01 L57.76 76.89 L57.36 76.75 L57.65 76.44 L56.57 76.31 L56.28 76.01 L56.6 75.49 L55.64 75.05 L55.96 74.18 L57.18 73.55 Z',
+      },
+      {
+        id: 'SMUD',
+        short: 'SMUD',
+        title: 'SMUD · Sacramento',
+        kind: 'POU',
+        salesTWh: 10.7,
+        salesYear: 2024,
+        color: '#6a9a45',
+        path: 'M29.3 32.73 L32.71 32.57 L33.56 34.53 L33.58 36.5 L30.59 37.15 L29.41 36.85 L28.9 37.61 L27.74 37.57 L28.08 37.43 L28.16 36.51 L28.47 35.97 L28.94 35.91 L28.84 35.25 L29.13 35.08 L28.59 34.62 L29.06 33.7 L27.9 32.78 L28.18 32.4 Z',
+      },
+      {
+        id: 'SVP',
+        short: 'SVP',
+        title: 'Silicon Valley Power · Santa Clara',
+        kind: 'POU',
+        salesTWh: 4.7,
+        salesYear: 2024,
+        color: '#5c7a8a',
+        path: 'M24.77 44.73 L25.01 44.89 L25.1 45.47 L24.42 45.62 L24.63 45.15 L24.43 45.11 Z',
+      }
     ];
+
+    const UTILITY_CODES = UTILITY_MAP_REGIONS.map((r) => r.id);
+
+    function mwSliderPercent(mw) {
+      return ((mw - MW_SLIDER_MIN) / (MW_SLIDER_MAX - MW_SLIDER_MIN)) * 100;
+    }
+
+    function UtilityTerritoryMap({ value, onChange }) {
+      const selected = UTILITY_MAP_REGIONS.find((r) => r.id === value) || UTILITY_MAP_REGIONS[0];
+      return (
+        <div className="utility-map-wrap">
+          <div className="utility-map-visual">
+            <svg
+              className="utility-map"
+              viewBox={CA_OUTLINE_VIEWBOX}
+              role="img"
+              aria-label="California outline with simplified PG&E, SCE, SDG&E, LADWP, SMUD, and Silicon Valley Power territories. Click a region to select."
+            >
+              <title>California utility territories (simplified)</title>
+              <path className="ca-base" d={CA_OUTLINE_PATH} />
+              {UTILITY_MAP_REGIONS.map((region) => {
+                const active = value === region.id;
+                return (
+                  <path
+                    key={region.id}
+                    className="territory"
+                    d={region.path}
+                    fill={region.color}
+                    fillRule="evenodd"
+                    data-utility={region.id}
+                    data-active={active ? 'true' : 'false'}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={active}
+                    aria-label={`${region.title}, ${region.salesTWh} terawatt-hours retail sales in ${region.salesYear}`}
+                    onClick={() => onChange(region.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onChange(region.id);
+                      }
+                    }}
+                  />
+                );
+              })}
+              <path className="ca-outline" d={CA_OUTLINE_PATH} />
+            </svg>
+            <p className="utility-map-selected">
+              Selected: <strong>{selected.short}</strong>
+              {' · '}
+              {selected.salesTWh} TWh ({selected.salesYear})
+            </p>
+          </div>
+          <div className="utility-map-legend" role="group" aria-label="Utility territory">
+            {UTILITY_MAP_REGIONS.map((region) => (
+              <button
+                key={region.id}
+                type="button"
+                data-active={value === region.id ? 'true' : 'false'}
+                onClick={() => onChange(region.id)}
+              >
+                <span className="swatch" style={{ background: region.color }} aria-hidden="true" />
+                <span className="legend-main">
+                  <span className="legend-title">{region.title}</span>
+                  <span className="legend-meta">{region.salesTWh} TWh · {region.salesYear}</span>
+                </span>
+                <span className="legend-kind">{region.kind}</span>
+              </button>
+            ))}
+          </div>
+          <p className="utility-map-note">
+            IOUs plus major POUs (LADWP, SMUD, SVP). Sales: EIA-861 2024 (IOUs = bundled + delivery; POUs = bundled). CEC LSE extract still ends at 2023. Smaller LSEs stay as unfilled gaps. Polygons simplified for planning — not legal boundaries.
+          </p>
+        </div>
+      );
+    }
+
+    function MwThresholdSlider({ value, onChange }) {
+      const t1 = mwSliderPercent(0.5);
+      const t2 = mwSliderPercent(25);
+      const zone = value < 0.5 ? 'below' : value < 25 ? 'disclosure' : 'full';
+      return (
+        <div>
+          <div
+            className="mw-slider-wrap"
+            style={{ '--mw-t1': `${t1}%`, '--mw-t2': `${t2}%` }}
+          >
+            <div
+              className="mw-slider-tick"
+              style={{ left: `${t1}%` }}
+              title="Disclosure threshold"
+            >
+              <span>0.5</span>
+            </div>
+            <div
+              className="mw-slider-tick"
+              style={{ left: `${t2}%` }}
+              title="Full developer share threshold"
+            >
+              <span>25</span>
+            </div>
+            <div className="mw-slider-bands" aria-hidden="true" />
+            <input
+              type="range"
+              min={MW_SLIDER_MIN}
+              max={MW_SLIDER_MAX}
+              step="0.1"
+              value={value}
+              onChange={(e) => onChange(Number(e.target.value))}
+              aria-valuemin={MW_SLIDER_MIN}
+              aria-valuemax={MW_SLIDER_MAX}
+              aria-valuenow={value}
+              aria-label="Facility size in megawatts"
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-fog-700 font-mono mt-1">
+            <span>{MW_SLIDER_MIN} MW</span>
+            <span>{MW_SLIDER_MAX} MW</span>
+          </div>
+          <div className="mw-zone-legend" aria-live="polite">
+            <span>
+              <i className="mw-zone-swatch" style={{ background: '#e5e5e5' }} />
+              &lt;0.5 MW · no disclosure{zone === 'below' ? ' · active' : ''}
+            </span>
+            <span>
+              <i className="mw-zone-swatch" style={{ background: '#9a9a9a' }} />
+              0.5–25 MW · reporting on{zone === 'disclosure' ? ' · active' : ''}
+            </span>
+            <span>
+              <i className="mw-zone-swatch" style={{ background: '#0a0a0a' }} />
+              ≥25 MW · full developer share{zone === 'full' ? ' · active' : ''}
+            </span>
+          </div>
+        </div>
+      );
+    }
 
     function getSizeExample(megawatts) {
       const examples = baselines.industryContext.sizeExamples;
@@ -963,9 +2079,9 @@
     }
 
     const STATUS_STYLES = {
-      modeled: 'bg-fog-100 text-fog-700 border-fog-200',
-      proposed: 'bg-chaparral-50 text-chaparral-700 border-chaparral-100',
-      enacted: 'bg-pacific-50 text-pacific-800 border-pacific-100',
+      modeled: 'bg-fog-50 text-fog-700 border-fog-200',
+      proposed: 'bg-white text-fog-700 border-fog-200',
+      enacted: 'bg-white text-pacific-800 border-pacific-600',
     };
 
     function StatusBadge({ status }) {
@@ -991,10 +2107,10 @@
     }
 
     const EVIDENCE_STYLES = {
-      strong: 'bg-pacific-50 text-pacific-800 border-pacific-100',
-      moderate: 'bg-chaparral-50 text-chaparral-700 border-chaparral-100',
-      weak: 'bg-amber-50 text-amber-800 border-amber-200',
-      speculative: 'bg-fog-100 text-fog-700 border-fog-200',
+      strong: 'bg-white text-pacific-800 border-pacific-600',
+      moderate: 'bg-white text-fog-700 border-fog-200',
+      weak: 'bg-white text-fog-700 border-fog-200',
+      speculative: 'bg-fog-50 text-fog-700 border-fog-200',
     };
 
     const EVIDENCE_LABELS = {
@@ -1204,8 +2320,8 @@
 
     function CollapsibleSection({ title, children, defaultOpen = false }) {
       return (
-        <details className="bg-white/95 border border-fog-200 rounded-xl shadow-sm group overflow-hidden" {...(defaultOpen ? { open: true } : {})}>
-          <summary className="font-semibold text-asphalt-900 text-base px-5 py-4 cursor-pointer list-none flex justify-between items-center gap-2 bg-gradient-to-r from-pacific-50 via-white to-chaparral-50 hover:from-pacific-100 transition-colors">
+        <details className="bg-white border border-fog-200 rounded-md group overflow-hidden" {...(defaultOpen ? { open: true } : {})}>
+          <summary className="font-semibold text-asphalt-900 text-base px-5 py-4 cursor-pointer list-none flex justify-between items-center gap-2 bg-white hover:bg-fog-50 transition-colors">
             <span>{title}</span>
             <span className="text-pacific-600 text-[10px] shrink-0 group-open:rotate-180 transition-transform">▼</span>
           </summary>
@@ -1214,32 +2330,79 @@
       );
     }
 
-    function ElectricityLineChart({ data, sourceLabel, sourceUrl }) {
-      const width = 480;
-      const height = 200;
-      const pad = { top: 12, right: 12, bottom: 28, left: 44 };
-      const minY = 3650;
-      const maxY = 4000;
+    function InputStepHeading({ step, title, hint }) {
+      return (
+        <div className="mb-3">
+          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-pacific-700 mb-1">
+            {step} · Input
+          </p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-asphalt-900">{title}</h2>
+          {hint ? <p className="text-xs text-fog-700 mt-1 leading-relaxed">{hint}</p> : null}
+        </div>
+      );
+    }
+
+    function ElectricityLineChart({ data, sourceLabel, sourceUrl, sourceNote, covidYear, covidLabel }) {
+      const width = 520;
+      const height = 220;
+      const pad = { top: 28, right: 14, bottom: 30, left: 46 };
+      const values = data.map((d) => d.billionKWh);
+      const dataMin = Math.min(...values);
+      const dataMax = Math.max(...values);
+      const padY = Math.max(40, Math.round((dataMax - dataMin) * 0.12));
+      const minY = Math.floor((dataMin - padY) / 50) * 50;
+      const maxY = Math.ceil((dataMax + padY) / 50) * 50;
       const minX = data[0].year;
       const maxX = data[data.length - 1].year;
       const xScale = (year) => pad.left + ((year - minX) / (maxX - minX)) * (width - pad.left - pad.right);
       const yScale = (val) => height - pad.bottom - ((val - minY) / (maxY - minY)) * (height - pad.top - pad.bottom);
       const points = data.map((d) => `${xScale(d.year)},${yScale(d.billionKWh)}`).join(' ');
-      const yTicks = [3700, 3800, 3900, 4000];
-      const xTicks = data.filter((_, i) => i % 2 === 0 || i === data.length - 1);
+      const yTickStep = maxY - minY > 600 ? 200 : 100;
+      const yTicks = [];
+      for (let tick = minY; tick <= maxY; tick += yTickStep) yTicks.push(tick);
+      const xTicks = data.filter((d, i) => i === 0 || i === data.length - 1 || d.year % 5 === 0);
+      const covidPoint = covidYear != null ? data.find((d) => d.year === covidYear) : null;
 
       return (
         <div className="space-y-2">
-          <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-lg" role="img" aria-label="US retail electricity sales 2010 to 2024">
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-xl" role="img" aria-label={`US retail electricity sales ${minX} to ${maxX}`}>
             {yTicks.map((tick) => (
               <g key={tick}>
                 <line x1={pad.left} y1={yScale(tick)} x2={width - pad.right} y2={yScale(tick)} stroke="#e7e5e4" strokeWidth="1" />
                 <text x={pad.left - 6} y={yScale(tick) + 3} textAnchor="end" className="fill-stone-400 text-[9px] font-mono">{tick}</text>
               </g>
             ))}
+            {covidPoint && (
+              <g>
+                <line
+                  x1={xScale(covidPoint.year)}
+                  y1={pad.top}
+                  x2={xScale(covidPoint.year)}
+                  y2={height - pad.bottom}
+                  stroke="#78716c"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                />
+                <circle cx={xScale(covidPoint.year)} cy={yScale(covidPoint.billionKWh)} r="4.5" fill="#fff" stroke="#161D22" strokeWidth="1.5" />
+                <text
+                  x={xScale(covidPoint.year)}
+                  y={pad.top - 8}
+                  textAnchor={covidPoint.year > (minX + maxX) / 2 ? 'end' : 'start'}
+                  className="fill-stone-600 text-[9px] font-semibold"
+                >
+                  {covidLabel || `${covidYear} · COVID`}
+                </text>
+              </g>
+            )}
             <polyline fill="none" stroke="#1A6B66" strokeWidth="2.25" points={points} />
             {data.map((d) => (
-              <circle key={d.year} cx={xScale(d.year)} cy={yScale(d.billionKWh)} r="3" fill="#1A6B66" />
+              <circle
+                key={d.year}
+                cx={xScale(d.year)}
+                cy={yScale(d.billionKWh)}
+                r={d.year === covidYear ? 0 : 2.75}
+                fill="#1A6B66"
+              />
             ))}
             {xTicks.map((d) => (
               <text key={d.year} x={xScale(d.year)} y={height - 8} textAnchor="middle" className="fill-stone-500 text-[9px] font-mono">{d.year}</text>
@@ -1247,9 +2410,9 @@
             <text x={width / 2} y={height} textAnchor="middle" className="fill-stone-400 text-[9px]">Year</text>
             <text x={10} y={height / 2} textAnchor="middle" transform={`rotate(-90 10 ${height / 2})`} className="fill-stone-400 text-[9px]">Billion kWh</text>
           </svg>
-          <p className="text-[10px] text-stone-400">
-            Each year, how much electricity did US homes and businesses buy? A higher line means more electricity.{' '}
-            Y-axis starts at 3,650 billion kWh so the trend is easier to see. The 2020 dip partly reflects COVID-era demand.{' '}
+          <p className="text-[10px] text-stone-400 leading-relaxed">
+            US retail electricity sales ({minX}–{maxX}). Growth was relatively flat for much of the 2010s after the 2000s climb; the marked 2020 dip partly reflects COVID-era closures and slower business activity (commercial and industrial sales fell; residential rose slightly). Y-axis is padded around the series, not zero.{' '}
+            {sourceNote ? `${sourceNote} ` : null}
             <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600">{sourceLabel}</a>
           </p>
         </div>
@@ -1257,14 +2420,22 @@
     }
 
     function App() {
-      const defaultInputs = baselines.industryContext.defaultInputs;
-      const [megawatts, setMegawatts] = useState(defaultInputs.megawatts);
-      const [utilityCode, setUtilityCode] = useState(defaultInputs.utilityCode);
-      const [coolingType, setCoolingType] = useState(defaultInputs.coolingType);
-      const [prefundCleanEnergy, setPrefundCleanEnergy] = useState(defaultInputs.prefundCleanEnergy);
-      const [activeTab, setActiveTab] = useState('plan');
+      const initialShare = useMemo(() => parseScenarioFromSearch(window.location.search), []);
+      const [megawatts, setMegawatts] = useState(initialShare.mw);
+      const [utilityCode, setUtilityCode] = useState(initialShare.utility);
+      const [coolingType, setCoolingType] = useState(initialShare.cooling);
+      const [prefundCleanEnergy, setPrefundCleanEnergy] = useState(initialShare.clean);
+      const [activeTab, setActiveTab] = useState(initialShare.tab);
       const [showDisclosureDraft, setShowDisclosureDraft] = useState(false);
-      const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+      const [scorecardPastSentinel, setScorecardPastSentinel] = useState(false);
+      const [scorecardForceExpanded, setScorecardForceExpanded] = useState(false);
+      const [comparePinned, setComparePinned] = useState(null);
+      const [compareExpanded, setCompareExpanded] = useState(false);
+      const [scorecardFlash, setScorecardFlash] = useState(false);
+      const [demoLineVisible, setDemoLineVisible] = useState(false);
+      const scorecardSentinelRef = useRef(null);
+      const demoFlashTimerRef = useRef(null);
+      const scorecardCompact = scorecardPastSentinel && !scorecardForceExpanded;
       const econDefaults = baselines.industryContext.economicsDefaults;
       const econSources = baselines.industryContext.economicsSources;
       const [capexPerMW, setCapexPerMW] = useState(econDefaults.capexPerMW);
@@ -1301,6 +2472,27 @@
         [megawatts, capexPerMW, loadFactor, pue, energyPricePerMWh, revenuePerKWMonth, includeRevenue, constructionYears, rampYears, includeFinancing, debtShare, interestRate, loanTermYears, discountRate, econDefaults, sb886Results?.developerShare, sb886Results?.annualPpaCost, ceqaResults?.timelineMonths]
       );
       const energyScale = useMemo(() => getEnergyScale(megawatts, loadFactor, pue), [megawatts, loadFactor, pue]);
+      const landAcres = useMemo(() => estimateLandAcres(megawatts), [megawatts]);
+      const waterBand = useMemo(() => estimateWaterBand(coolingType), [coolingType]);
+      const selectedMapRegion = useMemo(
+        () => UTILITY_MAP_REGIONS.find((r) => r.id === utilityCode) || null,
+        [utilityCode]
+      );
+      const compareA = useMemo(() => {
+        if (!comparePinned) return null;
+        return buildCompareSnapshot(
+          comparePinned.mw,
+          comparePinned.utilityCode,
+          comparePinned.coolingType,
+          comparePinned.prefundCleanEnergy,
+          loadFactor,
+          pue
+        );
+      }, [comparePinned, loadFactor, pue]);
+      const compareB = useMemo(
+        () => buildCompareSnapshot(megawatts, utilityCode, coolingType, prefundCleanEnergy, loadFactor, pue),
+        [megawatts, utilityCode, coolingType, prefundCleanEnergy, loadFactor, pue]
+      );
       const econAssumptions = useMemo(() => ({
         capexPerMW, loadFactor, pue, energyPricePerMWh, revenuePerKWMonth, includeRevenue,
         opexPerMWYear: econDefaults.opexPerMWYear, carryingCostRate: econDefaults.carryingCostRate, fastPathBaselineMonths: econDefaults.fastPathBaselineMonths,
@@ -1364,8 +2556,68 @@
         setPrefundCleanEnergy(preset.prefundCleanEnergy);
       };
 
+      const pinCurrentAsA = () => {
+        setComparePinned({
+          mw: megawatts,
+          utilityCode,
+          coolingType,
+          prefundCleanEnergy,
+        });
+        setCompareExpanded(true);
+      };
+
+      const clearCompare = () => {
+        setComparePinned(null);
+        setDemoLineVisible(false);
+      };
+
+      const swapCompareAB = () => {
+        if (!comparePinned) return;
+        const pinned = comparePinned;
+        setComparePinned({
+          mw: megawatts,
+          utilityCode,
+          coolingType,
+          prefundCleanEnergy,
+        });
+        setMegawatts(pinned.mw);
+        setUtilityCode(pinned.utilityCode);
+        setCoolingType(pinned.coolingType);
+        setPrefundCleanEnergy(pinned.prefundCleanEnergy);
+      };
+
+      const formatLandRange = (low, high) => {
+        const lo = low < 10 ? low.toFixed(1) : formatNumber(low);
+        const hi = high < 10 ? high.toFixed(1) : formatNumber(high);
+        return `~${lo}–${hi} acres`;
+      };
+
       const facilityTypes = baselines.industryContext.scenarioPresets;
       const stressTestPreset = baselines.industryContext.stressTestPreset;
+
+      const runTenSecondDemo = () => {
+        setActiveTab('plan');
+        setComparePinned({
+          mw: megawatts,
+          utilityCode,
+          coolingType,
+          prefundCleanEnergy,
+        });
+        setCompareExpanded(true);
+        setDemoLineVisible(true);
+        const colo = facilityTypes.find((p) => p.id === 'colo');
+        const campus = facilityTypes.find((p) => p.id === 'campus');
+        const contrast = megawatts >= 25 ? colo : campus;
+        if (contrast) loadPreset(contrast);
+        setScorecardFlash(false);
+        if (demoFlashTimerRef.current) clearTimeout(demoFlashTimerRef.current);
+        requestAnimationFrame(() => {
+          setScorecardFlash(true);
+          demoFlashTimerRef.current = setTimeout(() => setScorecardFlash(false), 1000);
+          const el = document.querySelector('.sticky-scorecard');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      };
 
       const activeFacilityType = useMemo(() => {
         return facilityTypes.find((preset) => (
@@ -1396,7 +2648,7 @@
         if (megawatts < 0.5) {
           narrative = 'Below 0.5 MW, monthly disclosure does not apply in this model.';
         } else if (megawatts < 25) {
-          narrative = 'Disclosure applies. Below 25 MW, the developer pays 75% of the modeled grid upgrade cost; other customers (ratepayers) cover the rest.';
+          narrative = 'Disclosure applies. Below 25 MW, the developer pays 75% of the modeled grid upgrade cost; the residual goes to other customers (utility rate base)—residential vs C&I class split is not modeled.';
         } else if (ceqaResults.timelineMonths === 12) {
           narrative = 'At or above 25 MW, the developer pays the full modeled grid upgrade cost. Permitting follows the faster modeled path when cooling, clean power, and size align.';
         } else {
@@ -1404,6 +2656,61 @@
         }
         return { disclosureLabel, narrative };
       }, [megawatts, ab1577Results.isTriggered, ceqaResults.timelineMonths]);
+
+      useEffect(() => {
+        return () => {
+          if (demoFlashTimerRef.current) clearTimeout(demoFlashTimerRef.current);
+        };
+      }, []);
+
+      useEffect(() => {
+        const presetId = activeFacilityType?.id || (stressTestActive ? 'stress' : null);
+        const next = buildScenarioSearch({
+          tab: activeTab,
+          mw: megawatts,
+          utility: utilityCode,
+          cooling: coolingType,
+          clean: prefundCleanEnergy,
+          presetId,
+        });
+        const url = `${window.location.pathname}${next}${window.location.hash}`;
+        window.history.replaceState(null, '', url);
+      }, [activeTab, megawatts, utilityCode, coolingType, prefundCleanEnergy, activeFacilityType, stressTestActive]);
+
+      useEffect(() => {
+        if (activeTab !== 'plan') {
+          setScorecardPastSentinel(false);
+          setScorecardForceExpanded(false);
+          return undefined;
+        }
+        const el = scorecardSentinelRef.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+
+        let observer = null;
+        const connect = () => {
+          if (observer) observer.disconnect();
+          observer = new IntersectionObserver(
+            ([entry]) => {
+              // Compact only after real scroll — avoids load-time compact when sentinel is below the fold.
+              if (!entry.isIntersecting && window.scrollY > 40) {
+                setScorecardPastSentinel(true);
+                return;
+              }
+              // Expand only near page top — avoids flicker when sticky height shrinks and pulls the sentinel back into view.
+              if (entry.isIntersecting && window.scrollY < 120) {
+                setScorecardPastSentinel(false);
+                setScorecardForceExpanded(false);
+              }
+            },
+            { root: null, rootMargin: '0px', threshold: 0 }
+          );
+          observer.observe(el);
+        };
+        connect();
+        return () => {
+          if (observer) observer.disconnect();
+        };
+      }, [activeTab]);
 
       const tabs = [
         { id: 'plan', label: 'Plan a site' },
@@ -1413,58 +2720,62 @@
 
       return (
         <div className="flex-1 flex flex-col min-h-screen site-atmosphere">
-          {!disclaimerDismissed && (
-            <div className="no-print bg-chaparral-50 border-b border-chaparral-100 px-4 py-3" role="note">
-              <div className="max-w-[1500px] mx-auto flex flex-col sm:flex-row sm:items-start gap-3 justify-between">
-                <p className="text-sm text-asphalt-900 leading-relaxed">
-                  <strong>What this is:</strong> {baselines.metadata.topBarBriefing} <strong>{baselines.metadata.disclaimer}</strong>
-                </p>
+          <section className="product-hero no-print" aria-label="Product introduction">
+            <div className="max-w-[1280px] mx-auto">
+              <p className="text-xs font-mono uppercase tracking-wider text-fog-700 mb-2">
+                · {baselines.metadata.appEyebrow}
+              </p>
+              <h1>{baselines.metadata.appTitleShort || baselines.metadata.appTitle}</h1>
+              <p className="hero-hook">{baselines.metadata.appHeroHook}</p>
+              <p className="hero-support">{baselines.metadata.appHeroSupport}</p>
+              <div className="hero-ctas">
                 <button
-                  onClick={() => setDisclaimerDismissed(true)}
-                  className="shrink-0 text-xs font-semibold text-chaparral-700 underline hover:no-underline"
+                  type="button"
+                  className="hero-cta-primary"
+                  onClick={() => {
+                    setActiveTab('plan');
+                    requestAnimationFrame(() => {
+                      const el = document.getElementById('plan-step-1');
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                  }}
                 >
-                  Dismiss
+                  Plan a site
+                </button>
+                <button
+                  type="button"
+                  className="hero-cta-secondary"
+                  onClick={() => setActiveTab('how-it-works')}
+                >
+                  How it works
                 </button>
               </div>
             </div>
-          )}
+          </section>
 
-          <header className="no-print header-sheen border-b border-asphalt-800 px-6 py-7 text-white">
-            <div className="max-w-[1500px] mx-auto flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-4xl">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-chaparral-500 mb-2">
-                  {baselines.metadata.appEyebrow}
-                </p>
-                <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-white leading-tight">
-                  {baselines.metadata.appTitle}
-                </h1>
-                <p className="text-base text-fog-200 mt-3 max-w-3xl leading-relaxed">
-                  {baselines.metadata.appSubtitle}
-                </p>
-                <p className="mt-3 text-[11px] font-mono uppercase tracking-wider text-pacific-100/90">
-                  PG&amp;E · SCE · SDG&amp;E
-                </p>
-              </div>
-              <nav className="flex flex-wrap gap-1 bg-asphalt-950/60 p-1 rounded-lg border border-white/10 backdrop-blur-sm" aria-label="Primary">
+          <div className="no-print border-b border-fog-200 bg-white/90 px-6 py-3">
+            <div className="max-w-[1280px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-fog-700 hidden sm:block truncate max-w-md">
+                {baselines.metadata.appTitleShort}
+              </p>
+              <nav className="archive-nav-tabs" aria-label="Primary">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
+                    type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2.5 rounded-md text-sm font-semibold transition ${
-                      activeTab === tab.id
-                        ? 'bg-pacific-600 text-white shadow-sm'
-                        : 'text-fog-200 hover:text-white hover:bg-white/5'
-                    }`}
+                    className={activeTab === tab.id ? 'is-active' : ''}
+                    aria-current={activeTab === tab.id ? 'page' : undefined}
                   >
                     {tab.label}
                   </button>
                 ))}
               </nav>
             </div>
-          </header>
+          </div>
 
           {activeTab === 'plan' && (
-            <main className="flex-1 max-w-[1500px] w-full mx-auto p-5 sm:p-8 space-y-5 tab-panel-enter">
+            <main className="flex-1 max-w-[1280px] w-full mx-auto p-5 sm:p-8 space-y-5">
               <div className="print-only mb-4 border-b border-stone-300 pb-4">
                 <h1 className="font-serif text-2xl font-bold text-stone-900">Scenario summary</h1>
                 <p className="text-sm text-stone-600 mt-1">
@@ -1472,91 +2783,418 @@
                 </p>
               </div>
 
-              <div className="no-print text-base text-fog-700 bg-white/85 border border-fog-200 rounded-xl px-5 py-4 backdrop-blur-sm shadow-sm">
-                Adjust size and options below. The summary updates with <strong className="text-asphalt-900">grid upgrade cost to the project</strong>, <strong className="text-asphalt-900">permitting months</strong>, and <strong className="text-asphalt-900">disclosure</strong>.
-              </div>
-
-              <div className="no-print sticky top-0 z-10 bg-white/95 backdrop-blur-md border border-fog-200 rounded-xl p-5 shadow-md space-y-4">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base">
-                  <span className="font-semibold text-asphalt-900 font-mono">{formatMW(megawatts)} MW</span>
-                  <span className="text-fog-200">·</span>
-                  <span className="text-fog-700">{baselines.utilityBaselines[utilityCode]?.name || utilityCode}</span>
-                  <span className="text-fog-200">·</span>
-                  <span className="text-fog-700 text-xs">{coolingType}</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-                  <div className="bg-chaparral-50 border border-chaparral-100 border-l-4 border-l-chaparral-500 rounded-lg px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-fog-700">Grid upgrade (developer)</p>
-                    <p key={`g-${sb886Results?.developerShare}`} className="metric-pulse font-mono font-bold text-asphalt-900 text-xl">{formatCurrency(sb886Results?.developerShare)}</p>
+              <div
+                className={`no-print sticky top-0 z-10 bg-white border border-fog-200 rounded-md sticky-scorecard ${scorecardFlash ? 'scorecard-flash' : ''} ${scorecardCompact ? 'sticky-scorecard--compact' : 'p-5 space-y-4'}`}
+              >
+                {scorecardCompact ? (
+                  <div className="sticky-scorecard-compact">
+                    <div className="sticky-scorecard-compact-head">
+                      <div className="sticky-scorecard-compact-id">
+                        {selectedMapRegion && (
+                          <span
+                            className="sc-utility-dot"
+                            style={{ backgroundColor: selectedMapRegion.color }}
+                            title={selectedMapRegion.title}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <span className="font-semibold text-asphalt-900 font-mono text-base">
+                          {formatMW(megawatts)} MW
+                        </span>
+                        <span className="text-fog-200">·</span>
+                        <span className="text-fog-700 text-sm">
+                          {baselines.utilityBaselines[utilityCode]?.name || utilityCode}
+                        </span>
+                        <span className="text-fog-200 hidden sm:inline">·</span>
+                        <span className="text-fog-700 text-xs hidden sm:inline">{coolingType}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setScorecardForceExpanded(true)}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md border border-fog-200 bg-white text-pacific-700 hover:bg-pacific-50 transition shrink-0"
+                      >
+                        Expand
+                      </button>
+                    </div>
+                    <div className="sticky-scorecard-compact-grid">
+                      <div>
+                        <span className="sc-label">Grid</span>
+                        <p className="sc-metric">{formatCurrency(sb886Results?.developerShare)}</p>
+                        <p className="text-[9px] text-fog-700/80 mt-0.5">$/MW knob</p>
+                      </div>
+                      <div>
+                        <span className="sc-label">Permit</span>
+                        <p className="sc-metric">{ceqaResults.timelineMonths} mo</p>
+                        <p className="text-[9px] text-fog-700/80 mt-0.5">CEQA · queue n/a</p>
+                      </div>
+                      <div>
+                        <span className="sc-label">Disclose</span>
+                        <p className="sc-metric sc-metric--text">
+                          {ab1577Results.isTriggered ? 'Monthly' : 'None'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="sc-label">Electricity</span>
+                        <p className="sc-metric">
+                          {energyScale ? `${(energyScale.annualMWh / 1000).toFixed(1)} GWh` : '—'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="sc-label">Water</span>
+                        <p className={`sc-metric sc-metric--text sc-water--${waterBand.level}`}>
+                          {waterBand.label}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-pacific-50 border border-pacific-100 border-l-4 border-l-pacific-600 rounded-lg px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-fog-700">Permitting</p>
-                    <p key={`p-${ceqaResults.timelineMonths}`} className="metric-pulse font-mono font-bold text-asphalt-900 text-xl">{ceqaResults.timelineMonths} mo</p>
-                  </div>
-                  <div className="bg-slate-100 border border-slate-200 border-l-4 border-l-asphalt-800 rounded-lg px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-fog-700">Disclosure</p>
-                    <p key={`d-${scenarioSummary.disclosureLabel}`} className="metric-pulse font-semibold text-asphalt-900 text-base leading-tight mt-1">{scenarioSummary.disclosureLabel}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-fog-700 leading-relaxed">{scenarioSummary.narrative}</p>
-                {energyScale && (
-                  <p className="text-[10px] text-fog-700/80">
-                    Rough electricity use: about <strong className="text-asphalt-900">{formatNumber(energyScale.homesEquivalent)}</strong> average US homes per year at current load factor and PUE.
-                  </p>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base">
+                        {selectedMapRegion && (
+                          <span
+                            className="sc-utility-dot inline-block"
+                            style={{ backgroundColor: selectedMapRegion.color, width: '0.55rem', height: '0.55rem', borderRadius: '999px' }}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <span className="font-semibold text-asphalt-900 font-mono">{formatMW(megawatts)} MW</span>
+                        <span className="text-fog-200">·</span>
+                        <span className="text-fog-700">{baselines.utilityBaselines[utilityCode]?.name || utilityCode}</span>
+                        <span className="text-fog-200">·</span>
+                        <span className="text-fog-700 text-xs">{coolingType}</span>
+                      </div>
+                      {scorecardPastSentinel && scorecardForceExpanded && (
+                        <button
+                          type="button"
+                          onClick={() => setScorecardForceExpanded(false)}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-md border border-fog-200 bg-white text-pacific-700 hover:bg-pacific-50 transition"
+                        >
+                          Compact
+                        </button>
+                      )}
+                    </div>
+                    <div className="metric-row text-center">
+                      <div className="px-4 py-3 text-left sm:text-center">
+                        <div className="flex flex-wrap items-center justify-center gap-1.5 mb-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-fog-700">Grid upgrade (modeled developer share)</p>
+                          <EvidenceBadge level="speculative" />
+                        </div>
+                        <p key={`g-${sb886Results?.developerShare}`} className="font-mono font-bold text-asphalt-900 text-xl text-center">{formatCurrency(sb886Results?.developerShare)}</p>
+                        <p className="text-[10px] text-fog-700 mt-0.5 text-center leading-snug">
+                          MW × territory $/MW knob · not a study quote
+                        </p>
+                        <GlossaryTip title="What is this?">
+                          <p>Illustrative developer share under the SB 886-style rule: MW times a territory $/MW placeholder, then 75% or 100% by size. Not a utility interconnection study quote. Residual (if any) means other customers of that utility—not a residential vs C&amp;I class split. “Rate base” here is shorthand for that residual, including when comparing POUs. See Why these numbers? below.</p>
+                        </GlossaryTip>
+                      </div>
+                      <div className="px-4 py-3 text-left sm:text-center">
+                        <p className="text-[10px] uppercase tracking-wide text-fog-700">Permitting</p>
+                        <p key={`p-${ceqaResults.timelineMonths}`} className="font-mono font-bold text-asphalt-900 text-xl text-center">{ceqaResults.timelineMonths} mo</p>
+                        <p className="text-[10px] text-fog-700 mt-1 text-center leading-snug">
+                          Queue: not modeled ·{' '}
+                          <a
+                            href="https://www.caiso.com/planning/Pages/GeneratorInterconnection/Default.aspx"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-stone-700 hover:text-stone-900"
+                          >
+                            CAISO interconnection
+                          </a>
+                        </p>
+                        <GlossaryTip title="What is this?">
+                          <p>
+                            <strong>CEQA-only. Interconnection queue not modeled.</strong>{' '}
+                            Modeled months: 36 baseline, 12 fast path, or 48 with open-loop cooling. Does not include air permits, zoning, or water rights.
+                          </p>
+                        </GlossaryTip>
+                      </div>
+                      <div className="px-4 py-3 text-left sm:text-center">
+                        <p className="text-[10px] uppercase tracking-wide text-fog-700">Disclosure</p>
+                        <p key={`d-${scenarioSummary.disclosureLabel}`} className="font-semibold text-asphalt-900 text-base leading-tight mt-1 text-center">{scenarioSummary.disclosureLabel}</p>
+                        <GlossaryTip title="What is this?">
+                          <p>AB 1577-style threshold at 0.5 MW. Above that, this scenario assumes monthly PUE, waste heat, and backup-emissions reporting. Not current statutory text.</p>
+                        </GlossaryTip>
+                      </div>
+                    </div>
+                    <div className="metric-row text-center">
+                      <div className="px-4 py-3 text-left sm:text-center">
+                        <p className="text-[10px] uppercase tracking-wide text-fog-700">Electricity</p>
+                        <p key={`e-${energyScale?.annualMWh}`} className="font-mono font-bold text-asphalt-900 text-xl text-center">
+                          {energyScale ? `${(energyScale.annualMWh / 1000).toFixed(1)} GWh/yr` : 'N/A'}
+                        </p>
+                        {energyScale && (
+                          <p className="text-[10px] text-fog-700/80 mt-1 text-center leading-snug">
+                            ~{formatNumber(energyScale.homesEquivalent)} avg US homes/yr
+                          </p>
+                        )}
+                        <GlossaryTip title="What is this?">
+                          <p>Annual facility electricity from MW × 8,760 × load factor × PUE. Homes line uses EIA average US household kWh/year. Stronger screen than land or water bands.</p>
+                        </GlossaryTip>
+                      </div>
+                      <div className="px-4 py-3 text-left sm:text-center">
+                        <div className="flex flex-wrap items-center justify-center gap-1.5 mb-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-fog-700">Land</p>
+                          <EvidenceBadge level="weak" />
+                        </div>
+                        <p key={`l-${landAcres.low}-${landAcres.high}`} className="font-mono font-semibold text-asphalt-900 text-base text-center">
+                          ~{landAcres.low < 10 ? landAcres.low.toFixed(1) : formatNumber(landAcres.low)}–{landAcres.high < 10 ? landAcres.high.toFixed(1) : formatNumber(landAcres.high)} acres
+                        </p>
+                        <GlossaryTip title="What is this?">
+                          <p>Illustrative planning range: 0.8–2.0 acres per MW × facility MW (same default for all presets). Not a parcel survey, zoning envelope, or site layout study.</p>
+                        </GlossaryTip>
+                      </div>
+                      <div className="px-4 py-3 text-left sm:text-center">
+                        <p className="text-[10px] uppercase tracking-wide text-fog-700">Water</p>
+                        <p key={`w-${waterBand.level}`} className={`font-semibold text-base text-center sc-water--${waterBand.level}`}>{waterBand.label}</p>
+                        <GlossaryTip title="What is this?">
+                          <p>
+                            {waterBand.note} Relative High/Medium/Low from cooling type only—not measured site gallons or Green Grid WUE.{' '}
+                            <a href="https://datacenters.lbl.gov/water-efficiency" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">LBNL water-efficiency context</a>
+                          </p>
+                        </GlossaryTip>
+                      </div>
+                    </div>
+                    <p className="text-sm text-fog-700 leading-relaxed">{scenarioSummary.narrative}</p>
+                    <p className="text-[10px] text-fog-700/80 leading-relaxed">
+                      Policy scenario screens + resource estimates—not a full siting study.
+                    </p>
+                  </>
                 )}
               </div>
+              <div ref={scorecardSentinelRef} className="scorecard-sentinel no-print" aria-hidden="true" />
 
-              <section className="no-print bg-gradient-to-br from-white via-pacific-50/50 to-chaparral-50 border border-pacific-100 rounded-xl p-5 sm:p-6 shadow-sm space-y-5">
-                <div className="flex flex-wrap items-end justify-between gap-2">
-                  <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-asphalt-900">Choose a facility type</h2>
-                    <p className="text-xs text-fog-700 mt-0.5">
-                      Pick a size class to load typical inputs. The app opens on <strong className="text-asphalt-900">Campus (30 MW)</strong>, so that button starts selected.
+              <div className="no-print bg-pacific-50 border border-pacific-100 rounded-md px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-asphalt-900">Try a 10-second demo</p>
+                  <p className="text-xs text-fog-700 mt-0.5">
+                    {demoLineVisible
+                      ? 'Pinned A · live B. Watch grid share and permitting move on the scorecard.'
+                      : 'Pins your current scenario as A, jumps to a contrasting size, and highlights the scorecard.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={runTenSecondDemo}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-md border border-pacific-600 bg-pacific-600 text-white hover:bg-pacific-700 transition shrink-0"
+                >
+                  Run demo
+                </button>
+              </div>
+
+              <details
+                className="no-print bg-white border border-fog-200 rounded-md group overflow-hidden"
+                open={compareExpanded}
+                onToggle={(e) => setCompareExpanded(e.currentTarget.open)}
+              >
+                <summary className="cursor-pointer list-none flex flex-wrap items-center justify-between gap-2 px-4 py-3 select-none">
+                  <span className="text-sm font-semibold text-asphalt-900">
+                    {comparePinned ? 'Compare scenarios (A vs B)' : 'Compare scenarios'}
+                  </span>
+                  <span className="text-xs text-fog-700 group-open:hidden">Optional · collapsed</span>
+                </summary>
+                <div className="border-t border-fog-200 px-4 py-3 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-fog-700">
+                      {comparePinned ? (
+                        <>
+                          <strong className="text-asphalt-900">(Comparing.)</strong> A is pinned; live controls edit B.
+                        </>
+                      ) : (
+                        <>
+                          <strong className="text-asphalt-900">(Want to compare?)</strong> Pin the current scenario as A, then change inputs to compare as B.
+                        </>
+                      )}
                     </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={pinCurrentAsA}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md border border-fog-200 bg-white text-pacific-700 hover:bg-pacific-50 transition"
+                      >
+                        {comparePinned ? 'Re-pin current as A' : 'Pin current as A'}
+                      </button>
+                      {comparePinned && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={swapCompareAB}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-md border border-fog-200 bg-white text-asphalt-900 hover:bg-fog-50 transition"
+                          >
+                            Swap A/B
+                          </button>
+                          <button
+                            type="button"
+                            onClick={clearCompare}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-md border border-fog-200 bg-white text-asphalt-900 hover:bg-fog-50 transition"
+                          >
+                            Clear compare
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  {activeFacilityType && (
-                    <p className="text-[10px] font-mono uppercase tracking-wide text-pacific-700 bg-pacific-50 border border-pacific-100 px-2 py-1 rounded">
-                      Active: {activeFacilityType.label} · {formatMW(activeFacilityType.mw)} MW
-                    </p>
-                  )}
-                  {!activeFacilityType && !stressTestActive && (
-                    <p className="text-[10px] font-mono uppercase tracking-wide text-fog-700 bg-fog-50 border border-fog-200 px-2 py-1 rounded">
-                      Custom inputs
-                    </p>
-                  )}
-                  {stressTestActive && (
-                    <p className="text-[10px] font-mono uppercase tracking-wide text-chaparral-700 bg-chaparral-50 border border-chaparral-100 px-2 py-1 rounded">
-                      Stress test active
-                    </p>
+
+                  {compareA && (
+                    <section className="compare-panel rounded-md p-4 sm:p-5 space-y-3" aria-label="Side-by-side scenario compare">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <h2 className="text-lg font-semibold text-asphalt-900 tracking-tight">Side-by-side compare</h2>
+                          <p className="text-xs text-fog-700 mt-0.5">
+                            Side-by-side compares modeled scenario screens, not a full siting study or interconnection quote.
+                          </p>
+                        </div>
+                        <EvidenceBadge level="speculative" />
+                      </div>
+                      <div className="compare-panel-grid">
+                        {[
+                          { key: 'A', snap: compareA, live: false },
+                          { key: 'B', snap: compareB, live: true },
+                        ].map(({ key, snap, live }) => (
+                          <div key={key} className="compare-panel-col space-y-2">
+                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wide text-pacific-700">
+                                Scenario {key}{live ? ' · live' : ' · pinned'}
+                              </span>
+                            </div>
+                            <p className="text-sm text-asphalt-900 leading-snug">
+                              <span className="font-mono font-semibold">{formatMW(snap.mw)} MW</span>
+                              <span className="text-fog-200"> · </span>
+                              {baselines.utilityBaselines[snap.utilityCode]?.name || snap.utilityCode}
+                              <span className="text-fog-200"> · </span>
+                              <span className="text-xs text-fog-700">{snap.coolingType}</span>
+                              <span className="text-fog-200"> · </span>
+                              <span className="text-xs text-fog-700">Clean {snap.prefundCleanEnergy ? 'on' : 'off'}</span>
+                            </p>
+                            {[
+                              {
+                                id: 'grid',
+                                label: 'Grid $',
+                                value: formatCurrency(snap.developerShare),
+                                raw: snap.developerShare,
+                              },
+                              {
+                                id: 'permit',
+                                label: 'Permit',
+                                value: `${snap.timelineMonths} mo`,
+                                raw: snap.timelineMonths,
+                              },
+                              {
+                                id: 'disclose',
+                                label: 'Disclose',
+                                value: snap.disclosureLabel,
+                                raw: snap.disclosureLabel,
+                              },
+                              {
+                                id: 'elec',
+                                label: 'Electricity',
+                                value: `${snap.gwh.toFixed(1)} GWh/yr`,
+                                raw: snap.gwh.toFixed(1),
+                              },
+                              {
+                                id: 'land',
+                                label: 'Land',
+                                value: formatLandRange(snap.landLow, snap.landHigh),
+                                raw: `${snap.landLow}-${snap.landHigh}`,
+                              },
+                              {
+                                id: 'water',
+                                label: 'Water',
+                                value: snap.waterLabel,
+                                raw: snap.waterLevel,
+                                waterClass: `sc-water--${snap.waterLevel}`,
+                              },
+                            ].map((row) => {
+                              const other = key === 'A' ? compareB : compareA;
+                              const otherRaw = {
+                                grid: other.developerShare,
+                                permit: other.timelineMonths,
+                                disclose: other.disclosureLabel,
+                                elec: other.gwh.toFixed(1),
+                                land: `${other.landLow}-${other.landHigh}`,
+                                water: other.waterLevel,
+                              }[row.id];
+                              const isDiff = row.raw !== otherRaw;
+                              return (
+                                <div key={row.id} className={`compare-metric-row${isDiff ? ' is-diff' : ''}`}>
+                                  <span className="cm-label">{row.label}</span>
+                                  <span className={`cm-value${row.waterClass ? ` ${row.waterClass}` : ''}`}>{row.value}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              </details>
+
+              <section id="plan-step-1" className="no-print bg-white border border-fog-200 rounded-md p-5 sm:p-6 space-y-4 scroll-mt-4">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <InputStepHeading
+                    step="1"
+                    title="Choose a facility type"
+                    hint="Pick a standardized template class to load typical inputs, or set an exact megawatt size with the slider. Campus (30 MW) is the app default."
+                  />
+                  <p className="text-xs text-fog-700 shrink-0">
+                    {activeFacilityType
+                      ? `Active: ${activeFacilityType.label} · ${formatMW(activeFacilityType.mw)} MW`
+                      : stressTestActive
+                        ? 'Stress test active'
+                        : 'Custom size'}
+                  </p>
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Start from a template</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {facilityTypeEnergy.map((preset) => {
                     const isActive = activeFacilityType?.id === preset.id;
                     return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => loadPreset(preset)}
-                        title={preset.hint}
-                        className={`text-left p-4 rounded-xl border transition shadow-sm ${
-                          isActive
-                            ? 'bg-pacific-50 border-pacific-600 ring-1 ring-pacific-600/30'
-                            : 'bg-fog-50/80 border-fog-200 hover:border-pacific-600/50'
-                        }`}
-                      >
-                        <div className="flex items-baseline justify-between gap-2">
-                          <span className={`text-lg font-semibold ${isActive ? 'text-pacific-800' : 'text-asphalt-900'}`}>{preset.label}</span>
-                          <span className="font-mono text-xs font-semibold text-fog-700">{formatMW(preset.mw)} MW</span>
-                        </div>
-                        <p className="text-sm text-fog-700 mt-2 leading-snug">{preset.shortDesc}</p>
-                        <p className="text-[10px] text-fog-700/80 mt-2 font-mono">
-                          ~{formatNumber(preset.annualMWh)} MWh/yr · ~{formatNumber(preset.homesEquivalent)} homes
-                        </p>
-                      </button>
+                      <div key={preset.id} className="facility-type-card" data-active={isActive ? 'true' : 'false'}>
+                        <button
+                          type="button"
+                          className="select-type"
+                          onClick={() => loadPreset(preset)}
+                          title={preset.hint}
+                        >
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className={`text-base font-semibold ${isActive ? 'text-pacific-800' : 'text-asphalt-900'}`}>{preset.label}</span>
+                            <span className="font-mono text-xs font-semibold text-fog-700">{formatMW(preset.mw)} MW</span>
+                          </div>
+                          <p className="text-[11px] text-fog-700 mt-1.5 leading-snug line-clamp-2">{preset.shortDesc}</p>
+                          <p className="text-[10px] text-fog-700/80 mt-1.5 font-mono">
+                            ~{formatNumber(preset.homesEquivalent)} homes/yr
+                          </p>
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
+                <details className="facility-types-info">
+                  <summary>
+                    <span>About these facility types</span>
+                    <span className="caret" aria-hidden="true">▼</span>
+                  </summary>
+                  <div className="facility-types-info-body space-y-3">
+                    {facilityTypeEnergy.map((preset) => (
+                      <div
+                        key={`${preset.id}-about`}
+                        className={`space-y-1 pt-2 first:pt-0 border-t border-fog-100 first:border-0 ${activeFacilityType?.id === preset.id ? 'bg-fog-50 -mx-1 px-1 rounded' : ''}`}
+                      >
+                        <p className="text-xs font-semibold text-asphalt-900">
+                          {preset.label} · {formatMW(preset.mw)} MW
+                          {preset.isDefault ? <span className="font-normal text-fog-700"> · app default</span> : null}
+                        </p>
+                        <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">Why build it:</strong> {preset.whyBuilt}</p>
+                        <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">How common:</strong> {preset.prevalenceNote}</p>
+                        <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">In this model:</strong> {preset.policyNote}</p>
+                        <p className="font-mono text-[10px] text-fog-700">
+                          ~{formatNumber(preset.annualMWh)} MWh/yr at current load factor and PUE
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 border-t border-fog-100">
                   <button
                     type="button"
@@ -1564,8 +3202,8 @@
                     title={stressTestPreset.hint}
                     className={`text-xs font-semibold px-3 py-2 rounded-md border transition shrink-0 ${
                       stressTestActive
-                        ? 'bg-chaparral-600 text-white border-chaparral-600'
-                        : 'bg-chaparral-50 text-chaparral-700 border-chaparral-100 hover:border-chaparral-500'
+                        ? 'bg-asphalt-900 text-white border-asphalt-900'
+                        : 'bg-white text-fog-700 border-fog-200 hover:border-fog-700'
                     }`}
                   >
                     {stressTestPreset.label}
@@ -1574,105 +3212,14 @@
                     <strong className="text-asphalt-900">Not a facility size.</strong> {stressTestPreset.shortDesc}
                   </p>
                 </div>
-              </section>
 
-              <CollapsibleSection title="Data center types explained" defaultOpen={true}>
-                <p className="text-sm text-fog-700 leading-relaxed">
-                  Energy figures use your current load factor ({(loadFactor * 100).toFixed(0)}%) and PUE ({pue.toFixed(2)}), same formula as the planner: MW × 8,760 × load factor × PUE. Homes use {baselines.industryContext.energyPriceBenchmarks.avgHomeKWhPerYear.toLocaleString()} kWh/year (EIA).
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead>
-                      <tr className="border-b border-fog-200 text-[10px] uppercase tracking-wide text-fog-700">
-                        <th className="py-2 pr-3 font-semibold">Type</th>
-                        <th className="py-2 pr-3 font-semibold">Size</th>
-                        <th className="py-2 pr-3 font-semibold text-right">Energy / yr</th>
-                        <th className="py-2 pr-3 font-semibold text-right">Homes</th>
-                        <th className="py-2 font-semibold">What it is</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-fog-700">
-                      {facilityTypeEnergy.map((preset) => (
-                        <tr key={preset.id} className={`border-b border-fog-100 align-top ${activeFacilityType?.id === preset.id ? 'bg-pacific-50/60' : ''}`}>
-                          <td className="py-2.5 pr-3 font-semibold text-asphalt-900 whitespace-nowrap">
-                            {preset.label}
-                            {preset.isDefault && <span className="block text-[10px] font-normal text-pacific-700">App default</span>}
-                          </td>
-                          <td className="py-2.5 pr-3 font-mono text-xs whitespace-nowrap">{formatMW(preset.mw)} MW</td>
-                          <td className="py-2.5 pr-3 font-mono text-xs text-right whitespace-nowrap">~{formatNumber(preset.annualMWh)} MWh</td>
-                          <td className="py-2.5 pr-3 font-mono text-xs text-right whitespace-nowrap">~{formatNumber(preset.homesEquivalent)}</td>
-                          <td className="py-2.5 text-xs leading-relaxed">{preset.shortDesc}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {facilityTypeEnergy.map((preset) => (
-                    <article key={`${preset.id}-detail`} className={`rounded-lg border p-4 space-y-2 ${activeFacilityType?.id === preset.id ? 'border-pacific-600 bg-pacific-50/70' : 'border-chaparral-100 bg-chaparral-50/50'}`}>
-                      <h3 className="text-base font-semibold text-asphalt-900">{preset.label} · {formatMW(preset.mw)} MW</h3>
-                      <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">Why build it:</strong> {preset.whyBuilt}</p>
-                      <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">How common:</strong> {preset.prevalenceNote}</p>
-                      <p className="text-xs text-fog-700 leading-relaxed"><strong className="text-asphalt-900">In this model:</strong> {preset.policyNote}</p>
-                    </article>
-                  ))}
-                </div>
-                <p className="text-xs text-fog-700 leading-relaxed border-t border-fog-100 pt-3">
-                  <strong className="text-asphalt-900">What people are building now:</strong> {baselines.industryContext.buildTrendNote}
-                </p>
-                <p className="text-[10px] text-fog-700/70">
-                  Prevalence notes are qualitative, not a census. For market share of cloud providers, see the Background tab. Microsoft San Jose figures are from{' '}
-                  <a href="https://www.energy.ca.gov/powerplant/backup-generating-system/san-jose-data-center" target="_blank" rel="noopener noreferrer" className="underline text-pacific-700 hover:text-pacific-800">CEC filings</a>.
-                </p>
-              </CollapsibleSection>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              <section className="no-print lg:col-span-1 bg-white/95 border border-fog-200 rounded-xl p-5 h-fit space-y-5 shadow-sm">
-                <div>
-                  <h2 className="font-serif text-xl font-bold text-asphalt-900">Your facility inputs</h2>
-                  <p className="text-xs text-fog-700 mt-1">
-                    {activeFacilityType
-                      ? `Loaded from ${activeFacilityType.label}. Adjust below or drag the slider for a custom size.`
-                      : stressTestActive
-                        ? 'Stress test loaded: open-loop cooling, clean power off. Adjust below as needed.'
-                        : 'Change inputs on the left; results update on the right.'}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-fog-700 font-medium">How big is the facility?</span>
-                    <span className="font-mono text-sm font-semibold bg-pacific-50 text-pacific-800 px-2 py-0.5 rounded border border-pacific-100">{formatMW(megawatts)} MW</span>
+                <div className="space-y-2 pt-3 border-t border-fog-100">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Or set a precise size</span>
+                    <span className="font-mono text-sm font-semibold text-asphalt-900 px-2 py-0.5 rounded border border-fog-200 bg-white">{formatMW(megawatts)} MW</span>
                   </div>
-                  <div className="relative">
-                    <input
-                      type="range" min={MW_SLIDER_MIN} max={MW_SLIDER_MAX} step="0.1" value={megawatts}
-                      onChange={(e) => setMegawatts(Number(e.target.value))}
-                      className="w-full h-1.5 bg-fog-200 rounded-lg appearance-none cursor-pointer range-ca"
-                    />
-                    <div className="flex justify-between text-[10px] text-fog-700 font-mono mt-1.5">
-                      <span>{MW_SLIDER_MIN} MW</span>
-                      <span>{MW_SLIDER_MAX} MW</span>
-                    </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] text-fog-700">
-                      {MW_POLICY_THRESHOLDS.map((threshold) => (
-                        <span
-                          key={threshold.mw}
-                          className={megawatts >= threshold.mw ? 'text-pacific-700 font-medium underline decoration-pacific-100 underline-offset-2' : ''}
-                        >
-                          <span className="font-mono">{threshold.label}</span>
-                          <span className="text-fog-200"> · </span>
-                          {threshold.note}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  <MwThresholdSlider value={megawatts} onChange={setMegawatts} />
                   <div className="bg-fog-50 border border-fog-100 rounded-md p-2.5 text-xs text-fog-700 space-y-1.5 leading-relaxed">
-                    <p>
-                      <strong className="text-asphalt-900">Default facility type:</strong>{' '}
-                      Campus · {defaultInputs.megawatts} MW · {defaultInputs.utilityLabel} · {defaultInputs.coolingType} · clean power on.
-                      {' '}{baselines.industryContext.defaultExampleNote}
-                    </p>
                     <p>
                       <strong className="text-asphalt-900">At {formatMW(megawatts)} MW:</strong>{' '}
                       {sizeExample.label}. {sizeExample.example}
@@ -1683,127 +3230,100 @@
                         </>
                       )}
                     </p>
-                    {sizeExample.sourceUrl && (
-                      <p className="text-[10px] text-stone-400">Illustrative comparison only. Not affiliated with Microsoft or PG&E.</p>
-                    )}
                   </div>
                   <FieldHelp>
-                    Threshold markers highlight when your size crosses a rule in this model (disclosure at 0.5 MW; developer pays the full modeled upgrade cost at 25 MW).
+                    Track bands mark modeled policy thresholds: disclosure at 0.5 MW; full developer upgrade share at 25 MW.
                   </FieldHelp>
                   <GlossaryTip title="What does MW mean?">
                     <p><strong>Megawatt (MW)</strong> measures how much electric power a facility can draw at once. One MW equals 1,000 kilowatts. A mid-size campus often lands around 30 MW; very large sites can exceed 100 MW.</p>
                   </GlossaryTip>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-stone-700 block">Where would it connect?</label>
-                  <select
-                    value={utilityCode}
-                    onChange={(e) => setUtilityCode(e.target.value)}
-                    className="w-full bg-white border border-fog-200 rounded-md p-2.5 text-sm text-asphalt-900 focus:outline-none focus:ring-2 focus:ring-pacific-600/40"
-                  >
-                    <option value="PGE">PG&E (Northern California)</option>
-                    <option value="SDGE">SDG&E (San Diego)</option>
-                    <option value="SCE">SCE (Southern California)</option>
-                  </select>
-                  <p className="text-xs text-fog-700 leading-relaxed bg-fog-50 p-2.5 rounded border border-fog-100">
-                    {baselines.utilityBaselines[utilityCode].regionalBrief}
-                  </p>
-                  <FieldHelp>
-                    Investor-owned utility territory. The model uses one illustrative $/MW placeholder per territory.
-                  </FieldHelp>
-                  <GlossaryTip title="What does this mean?">
-                    <p>PG&E, SCE, and SDG&E deliver electricity in different parts of California. Real interconnection costs depend on the local substation, voltage, and utility study results. Figures here are not quotes.</p>
-                  </GlossaryTip>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-stone-700 block">How would you cool it?</label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      { id: 'Evaporative Open-Loop', desc: 'Uses more water. In the modeled CEQA timeline, this can add months.' },
-                      { id: 'Closed-Loop Air Cooled', desc: 'Saves water but uses more electricity for cooling.' },
-                      { id: 'Direct-to-Chip Liquid', desc: 'Low water loss. Often used for dense computing loads.' },
-                    ].map((cooling) => (
-                      <button
-                        key={cooling.id}
-                        onClick={() => setCoolingType(cooling.id)}
-                        className={`text-left p-3 rounded-md border text-xs transition ${
-                          coolingType === cooling.id
-                            ? 'bg-pacific-50 border-pacific-600 text-asphalt-900'
-                            : 'bg-white border-fog-200 text-fog-700 hover:border-pacific-600/50'
-                        }`}
-                      >
-                        <span className="font-semibold block">{cooling.id}</span>
-                        <span className="text-fog-700/80 mt-0.5 block">{cooling.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <FieldHelp>
-                    Cooling choice affects water use and the modeled CEQA timeline.
-                  </FieldHelp>
-                  <GlossaryTip title="What does this mean?">
-                    <p>Open-loop evaporative cooling uses more water and adds months in this model. Water districts and air permits can raise separate issues not captured here.</p>
-                  </GlossaryTip>
-                </div>
-
-                <div className="pt-3 border-t border-fog-200">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={prefundCleanEnergy}
-                      onChange={(e) => setPrefundCleanEnergy(e.target.checked)}
-                      className="mt-0.5 rounded border-fog-200 text-pacific-600 focus:ring-pacific-600"
-                    />
-                    <span>
-                      <span className="text-sm font-medium text-asphalt-900 block">Commit to long-term clean power (15 years, modeled)</span>
-                      <span className="text-xs text-fog-700">Affects the modeled permitting timeline. Clean-energy cost estimates appear at 25 MW and above in the SB 886 breakdown.</span>
-                    </span>
-                  </label>
-                  <GlossaryTip title="What is clean power here?">
-                    <p>A long-term commitment to low-carbon electricity (often via a power purchase agreement). In this model it can unlock the shorter permitting path and add a clean-energy cost line at 25 MW and above.</p>
-                  </GlossaryTip>
-                </div>
               </section>
 
-              <section className="lg:col-span-2 print:col-span-full space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-chaparral-50 border border-chaparral-100 border-t-4 border-t-chaparral-500 rounded-xl p-5 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                      <StatusBadge status="modeled" />
-                      <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Grid upgrade (SB 886)</p>
-                    </div>
-                    <p key={`card-g-${sb886Results?.developerShare}`} className="metric-pulse text-3xl font-bold text-asphalt-900 font-mono mt-2">{formatCurrency(sb886Results?.developerShare)}</p>
-                    <p className="text-[10px] text-fog-700 mt-0.5">Developer share (modeled)</p>
-                  </div>
-                  <div className="bg-pacific-50 border border-pacific-100 border-t-4 border-t-pacific-600 rounded-xl p-5 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                      <StatusBadge status="modeled" />
-                      <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Permitting (SB 887)</p>
-                    </div>
-                    <p key={`card-p-${ceqaResults.timelineMonths}`} className="metric-pulse text-3xl font-bold text-asphalt-900 font-mono mt-2">{ceqaResults.timelineMonths} <span className="text-sm font-sans font-medium text-fog-700">mo</span></p>
-                    <p className={`text-[10px] mt-0.5 ${ceqaResults.statusColor}`}>{ceqaResults.status}</p>
-                  </div>
-                  <div className="bg-slate-100 border border-slate-200 border-t-4 border-t-asphalt-800 rounded-xl p-5 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                      <StatusBadge status="modeled" />
-                      <EvidenceBadge level="speculative" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-fog-700">Disclosure (AB 1577)</p>
-                    </div>
-                    <p key={`card-d-${ab1577Results.reportingCadence}`} className="metric-pulse text-lg font-semibold text-asphalt-900 leading-snug mt-2">{ab1577Results.reportingCadence}</p>
-                    <p className="text-[10px] text-fog-700 mt-0.5">{ab1577Results.isTriggered ? `${ab1577Results.metricsRequired.length} metrics in scenario` : 'Below 0.5 MW threshold'}</p>
-                  </div>
+              <section className="no-print bg-white border border-fog-200 rounded-md p-5 sm:p-6 space-y-4">
+                <InputStepHeading
+                  step="2"
+                  title="Choose your utility"
+                  hint="Select where the facility would interconnect. Shapes are simplified CEC LSE territories."
+                />
+                <UtilityTerritoryMap value={utilityCode} onChange={setUtilityCode} />
+                <p className="text-xs text-fog-700 leading-relaxed bg-fog-50 p-2.5 rounded border border-fog-100">
+                  {baselines.utilityBaselines[utilityCode].regionalBrief}
+                </p>
+                <div className="flex items-start gap-2 flex-wrap">
+                  <EvidenceBadge level={baselines.utilityBaselines[utilityCode].costEvidence || 'speculative'} />
+                  <p className="text-xs text-fog-700 leading-relaxed flex-1 min-w-[12rem]">
+                    Grid $/MW for {baselines.utilityBaselines[utilityCode].name}: {formatCurrency(baselines.utilityBaselines[utilityCode].estimatedGridUpgradeCostPerMW)}/MW — {baselines.utilityBaselines[utilityCode].costNote}
+                  </p>
                 </div>
+                <FieldHelp>
+                  Territory $/MW values are scenario knobs so you can compare LSEs under the same SB 886-style math. They are not interconnection study quotes.
+                </FieldHelp>
+              </section>
 
+              <section className="no-print bg-white border border-fog-200 rounded-md p-5 sm:p-6 space-y-4">
+                <InputStepHeading
+                  step="3"
+                  title="Choose cooling"
+                  hint="Cooling affects the water screen and the modeled CEQA timeline."
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: 'Evaporative Open-Loop', desc: 'Uses more water. In the modeled CEQA timeline, this can add months.' },
+                    { id: 'Closed-Loop Air Cooled', desc: 'Saves water but uses more electricity for cooling.' },
+                    { id: 'Direct-to-Chip Liquid', desc: 'Low water loss. Often used for dense computing loads.' },
+                  ].map((cooling) => (
+                    <button
+                      key={cooling.id}
+                      type="button"
+                      onClick={() => setCoolingType(cooling.id)}
+                      className={`text-left p-3 rounded-md border text-xs transition ${
+                        coolingType === cooling.id
+                          ? 'bg-white border-pacific-600 text-asphalt-900'
+                          : 'bg-white border-fog-200 text-fog-700 hover:border-fog-700'
+                      }`}
+                    >
+                      <span className="font-semibold block">{cooling.id}</span>
+                      <span className="text-fog-700/80 mt-0.5 block">{cooling.desc}</span>
+                    </button>
+                  ))}
+                </div>
+                <GlossaryTip title="What does this mean?">
+                  <p>Open-loop evaporative cooling uses more water and adds months in this model. Water districts and air permits can raise separate issues not captured here.</p>
+                </GlossaryTip>
+              </section>
+
+              <section className="no-print bg-white border border-fog-200 rounded-md p-5 sm:p-6 space-y-3">
+                <InputStepHeading
+                  step="4"
+                  title="Clean power commitment"
+                  hint="Optional. Affects the modeled permitting fast path and clean-energy cost lines at 25 MW and above."
+                />
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={prefundCleanEnergy}
+                    onChange={(e) => setPrefundCleanEnergy(e.target.checked)}
+                    className="mt-0.5 rounded border-fog-200 text-pacific-600 focus:ring-pacific-600"
+                  />
+                  <span>
+                    <span className="text-sm font-medium text-asphalt-900 block">Commit to long-term clean power (15 years, modeled)</span>
+                    <span className="text-xs text-fog-700">Can unlock the shorter permitting path in this scenario. Clean-energy cost estimates appear at 25 MW and above in the SB 886 breakdown.</span>
+                  </span>
+                </label>
+                <GlossaryTip title="What is clean power here?">
+                  <p>A long-term commitment to low-carbon electricity (often via a power purchase agreement). In this model it can unlock the shorter permitting path and add a clean-energy cost line at 25 MW and above.</p>
+                </GlossaryTip>
+              </section>
+
+              <section className="no-print space-y-5">
                 <CollapsibleSection title="Why these numbers?">
                   <div className="space-y-3 text-sm text-stone-600">
                     <p>
-                      <strong className="text-stone-800">Grid upgrade (developer share):</strong>{' '}
+                      <strong className="text-stone-800">Grid upgrade (modeled developer share):</strong>{' '}
                       {sb886Results?.isTriggered
                         ? 'At 25 MW and above, this scenario assigns the full modeled upgrade cost to the developer.'
-                        : 'Below 25 MW, the developer pays 75% of the modeled cost; ratepayers cover the rest.'}
+                        : 'Below 25 MW, the developer pays 75% of the modeled cost; the residual is other customers on the utility rate base (class split not modeled).'}
                       {' '}At {formatMW(megawatts)} MW on {baselines.utilityBaselines[utilityCode]?.name || utilityCode}, the modeled total is {formatCurrency(sb886Results?.totalGridUpgradeCost)}.
                     </p>
                     <GlossaryTip title="What is a grid upgrade?">
@@ -1853,7 +3373,10 @@
                     </div>
                     <div className="bg-stone-50 rounded-md border border-stone-100 p-4 font-mono text-sm space-y-2">
                       <div className="flex justify-between"><span className="text-stone-500 text-xs">Total placeholder upgrade cost</span><span>{formatCurrency(sb886Results?.totalGridUpgradeCost)}</span></div>
-                      <div className="flex justify-between"><span className="text-stone-500 text-xs">Illustrative ratepayer share</span><span className={sb886Results?.ratepayerShare > 0 ? 'text-rose-700 font-semibold' : ''}>{sb886Results?.ratepayerShare > 0 ? formatCurrency(sb886Results?.ratepayerShare) : '$0 in this scenario'}</span></div>
+                      <div className="flex justify-between"><span className="text-stone-500 text-xs">Modeled developer share</span><span>{formatCurrency(sb886Results?.developerShare)}</span></div>
+                      {sb886Results?.ratepayerShare > 0 && (
+                        <div className="flex justify-between"><span className="text-stone-500 text-xs">Illustrative residual to other customers / rate base</span><span className="text-rose-700 font-semibold">{formatCurrency(sb886Results?.ratepayerShare)}</span></div>
+                      )}
                       <div className="flex justify-between"><span className="text-stone-500 text-xs">15-year modeled clean-energy cost</span><span>{formatCurrency(sb886Results?.total15YearPpaCost)}</span></div>
                       {prefundCleanEnergy && !sb886Results?.isTriggered && (
                         <p className="text-[10px] text-stone-400 pt-1">Clean power is on, but modeled PPA costs apply only at 25 MW and above in this scenario.</p>
@@ -2142,26 +3665,26 @@
                   </ul>
                 </CollapsibleSection>
               </section>
-              </div>
             </main>
           )}
 
           {activeTab === 'background' && (
-            <main className="flex-1 max-w-[1500px] w-full mx-auto p-5 sm:p-8 space-y-6 tab-panel-enter">
+            <main className="photo-band photo-band--transmission flex-1">
+              <div className="max-w-[1280px] w-full mx-auto p-5 sm:p-8 space-y-6">
               <div className="section-kicker">
-                <h2 className="font-serif text-3xl font-bold text-asphalt-900">Background</h2>
+                <h2 className="font-sans text-3xl font-semibold text-asphalt-900">Background</h2>
                 <p className="text-sm text-fog-700 mt-1 leading-relaxed max-w-3xl">
-                  Cloud market context and US electricity trends that frame why data center siting matters for the grid and for ratepayers.
+                  Cloud market context and US electricity trends that frame why data center siting matters for the grid and for other utility customers.
                 </p>
                 <nav className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                  <button type="button" onClick={() => setActiveTab('plan')} className="underline text-pacific-700 hover:text-pacific-800">← Plan a site</button>
-                  <button type="button" onClick={() => setActiveTab('how-it-works')} className="underline text-pacific-700 hover:text-pacific-800">How it works →</button>
+                  <button type="button" onClick={() => setActiveTab('plan')} className="underline text-asphalt-900 hover:text-fog-700">← Plan a site</button>
+                  <button type="button" onClick={() => setActiveTab('how-it-works')} className="underline text-asphalt-900 hover:text-fog-700">How it works →</button>
                 </nav>
               </div>
 
-              <section className="bg-gradient-to-br from-white to-pacific-50 border border-pacific-100 rounded-xl p-6 shadow-sm space-y-5">
+              <section className="content-panel space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-serif font-semibold text-asphalt-900 text-xl">Top cloud infrastructure providers (global)</h3>
+                  <h3 className="font-sans font-semibold text-asphalt-900 text-xl">Top cloud infrastructure providers (global)</h3>
                   <EvidenceBadge level="moderate" />
                 </div>
                 <p className="text-sm text-stone-600 leading-relaxed">
@@ -2203,51 +3726,61 @@
               </section>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <section className="bg-pacific-50 border border-pacific-100 rounded-xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-serif font-semibold text-asphalt-900 text-xl">US electricity use (retail sales)</h3>
+                <section className="content-panel space-y-4">
+                  <h3 className="font-sans font-semibold text-asphalt-900 text-xl">US electricity use (retail sales)</h3>
                   <ElectricityLineChart
                     data={baselines.usElectricity.historical}
                     sourceLabel={baselines.usElectricity.sourceLabel}
                     sourceUrl={baselines.usElectricity.sourceUrl}
+                    sourceNote={baselines.usElectricity.sourceNote}
+                    covidYear={baselines.usElectricity.covidYear}
+                    covidLabel={baselines.usElectricity.covidLabel}
                   />
                   <p className="text-sm text-stone-600 leading-relaxed">
                     Data centers are often estimated at <strong>{baselines.industryContext.dataCenterSharePercent.low}–{baselines.industryContext.dataCenterSharePercent.high}%</strong> of US electricity ({baselines.industryContext.dataCenterSharePercent.year}). {baselines.industryContext.dataCenterSharePercent.sourceLabel}.
                   </p>
                 </section>
 
-                <section className="bg-chaparral-50 border border-chaparral-100 rounded-xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-serif font-semibold text-asphalt-900 text-xl">Why residential customers often pay more per kWh</h3>
+                <section className="content-panel space-y-4">
+                  <h3 className="font-sans font-semibold text-asphalt-900 text-xl">Why residential customers often pay more per kWh</h3>
                   <div className="text-sm text-stone-600 space-y-2 leading-relaxed">
                     <p>Home bills bundle more than energy: distribution wires, wildfire and grid hardening, public purpose programs, and legacy costs. Large data centers usually buy under commercial or industrial tariffs with different rate structures.</p>
                     <p>The facility economics defaults use about <strong>${baselines.industryContext.economicsDefaults.energyPricePerMWh}/MWh</strong> (large-customer band). US residential averages near <strong>${baselines.industryContext.energyPriceBenchmarks.usResidentialPerMWh}/MWh</strong>; California residential is often higher.</p>
-                    <p>When grid upgrade costs are socialized to ratepayers (see the SB 886 ratepayer share on Plan a site), residential bills can feel the spillover. That is a policy allocation question, not a physics rule.</p>
+                    <p>When residual grid upgrade costs land on other customers via the utility rate base (see the SB 886 residual on Plan a site), bills can feel the spillover. How that splits across residential vs C&amp;I is a policy allocation question still under SB 57 / R.26-04-009—not modeled as fixed percentages here.</p>
                   </div>
                   <p className="text-[10px] text-stone-400">
                     <a href={baselines.industryContext.energyPriceBenchmarks.eiaPricesUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600">EIA average retail prices by sector</a>
                   </p>
                 </section>
               </div>
+              </div>
             </main>
           )}
 
           {activeTab === 'how-it-works' && (
-            <main className="flex-1 max-w-7xl w-full mx-auto p-5 sm:p-8 space-y-6 tab-panel-enter">
+            <main className="photo-band photo-band--fog-field flex-1">
+              <div className="max-w-[1280px] w-full mx-auto p-5 sm:p-8 space-y-6">
               <div className="section-kicker">
-                <h2 className="font-serif text-3xl font-bold text-asphalt-900">How it works</h2>
+                <h2 className="font-sans text-3xl font-semibold text-asphalt-900">How it works</h2>
                 <p className="text-sm text-fog-700 mt-1 leading-relaxed max-w-3xl">
                   Bill context, worked examples, and formulas behind the planner. Verify bill text at{' '}
-                  <a href="https://leginfo.legislature.ca.gov/" target="_blank" rel="noopener noreferrer" className="underline text-pacific-700 hover:text-pacific-800">California Legislative Information</a>.
+                  <a href="https://leginfo.legislature.ca.gov/" target="_blank" rel="noopener noreferrer" className="underline text-asphalt-900 hover:text-fog-700">California Legislative Information</a>.
                 </p>
-                <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-pacific-700">
-                  <a href="#how-bills" className="underline hover:text-pacific-800">Bills</a>
-                  <a href="#how-policy" className="underline hover:text-pacific-800">Real policy</a>
-                  <a href="#how-math" className="underline hover:text-pacific-800">Worked example</a>
-                  <a href="#how-formulas" className="underline hover:text-pacific-800">Formulas</a>
-                  <button type="button" onClick={() => setActiveTab('plan')} className="underline hover:text-pacific-800">← Plan a site</button>
+                <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-asphalt-900">
+                  <a href="#how-bills" className="underline hover:text-fog-700">Bills</a>
+                  <a href="#how-policy" className="underline hover:text-fog-700">Real policy</a>
+                  <a href="#how-math" className="underline hover:text-fog-700">Worked example</a>
+                  <a href="#how-formulas" className="underline hover:text-fog-700">Formulas</a>
+                  <button type="button" onClick={() => setActiveTab('plan')} className="underline hover:text-fog-700">← Plan a site</button>
                 </nav>
               </div>
 
-              <details className="bg-white border border-stone-200 rounded-lg p-4">
+              <p className="text-sm text-fog-700 leading-relaxed content-panel">
+                For California EV charging vs data-center <strong className="text-asphalt-900">peak timing</strong> on real CAISO days, see{' '}
+                <a href="https://saraxlinnea.github.io/california-net-load/" target="_blank" rel="noopener noreferrer" className="underline text-asphalt-900 hover:text-fog-700">California Net Load</a>.
+              </p>
+
+              <details className="content-panel">
                 <summary className="font-semibold text-stone-800 text-sm cursor-pointer">What does &quot;modeled estimate&quot; mean?</summary>
                 <p className="text-sm text-stone-600 mt-2 leading-relaxed">{baselines.metadata.modeledScenarioDefinition}</p>
               </details>
@@ -2258,7 +3791,7 @@
                   key: 'SB886',
                   title: 'Grid upgrade cost allocation',
                   billNote: 'SB 886 style',
-                  body: 'Debate over whether large data centers pay full interconnection / grid upgrade costs or spread them to ratepayers. This scenario assigns 100% to the developer at 25 MW and above.',
+                  body: 'Debate over whether large data centers pay full interconnection / grid upgrade costs or leave a residual on the utility rate base. This scenario assigns 100% to the developer at 25 MW and above; class allocation of any residual is not modeled.',
                 },
                 {
                   key: 'SB887',
@@ -2275,11 +3808,11 @@
               ].map((item) => {
                 const rule = baselines.legislativeTriggers[item.key];
                 return (
-                  <article key={item.key} className="bg-gradient-to-r from-pacific-50 to-white border border-pacific-100 border-l-4 border-l-pacific-600 rounded-xl p-5 shadow-sm space-y-3">
+                  <article key={item.key} className="bg-white border border-fog-200 rounded-md p-5 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <h3 className="font-semibold text-asphalt-900 text-lg">{item.title}</h3>
-                        <p className="text-[10px] text-chaparral-600 mt-0.5 font-semibold uppercase tracking-wide">{item.billNote}</p>
+                        <p className="text-[10px] text-fog-700 mt-0.5 font-semibold uppercase tracking-wide">{item.billNote}</p>
                       </div>
                       <StatusBadge status={rule.status} />
                     </div>
@@ -2289,36 +3822,65 @@
                 );
               })}
 
-              <h3 id="how-policy" className="section-kicker text-base font-semibold uppercase tracking-wide pt-2 scroll-mt-4">Real policy: are people arguing data centers should pay more?</h3>
-              <article className="bg-chaparral-50 border border-chaparral-100 rounded-xl p-5 shadow-sm space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <EvidenceBadge level="moderate" />
-                  <p className="text-xs text-stone-500">Real enacted law and active regulatory proceedings, not part of the simplified scenarios above.</p>
-                </div>
+              <h3 id="how-policy" className="section-kicker text-base font-semibold uppercase tracking-wide pt-2 scroll-mt-4">Real policy: modeled vs enacted</h3>
+              <div className="photo-band photo-band--coastal -mx-5 sm:-mx-8 px-5 sm:px-8 py-6">
+              <article className="content-panel space-y-4">
                 <p className="text-sm text-stone-600 leading-relaxed">
-                  Yes. The core worry is <strong>cost-shifting</strong>: that grid upgrades built to serve large data centers get spread onto residential and small-business ratepayers, and that if a project cancels, ratepayers are left with <strong>stranded costs</strong>.
+                  The core worry is <strong>cost-shifting</strong>: grid upgrades built to serve large data centers get spread onto other customers on the utility rate base, and if a project cancels, those customers can be left with <strong>stranded costs</strong>. How any residual would split between residential and C&amp;I classes is unsettled under{' '}
+                  <a href="https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB57" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">SB 57</a>
+                  {' '}and{' '}
+                  <a href="https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M604/K677/604677976.PDF" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">CPUC R.26-04-009</a>
+                  ; this app does not invent a class percentage split. See also{' '}
+                  <a href="https://www.publicadvocates.cpuc.ca.gov/press-room/commentary/251027-how-will-data-center-growth-impact-california-ratepayers" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">Public Advocates commentary</a>
+                  {' '}on large-load cost impacts. This app&apos;s dials are not the same as California law.
                 </p>
-                <ul className="text-sm text-stone-600 list-disc pl-5 space-y-1.5">
-                  <li>
-                    <strong>SB 57 (Padilla), 2025.</strong> Directs the CPUC to assess data-center cost impacts, stranded costs, and cost shifts to other customers, with a report due to the Legislature by January 1, 2027. It is study-first: it does <em>not</em> impose new data-center charges or rate classes yet.{' '}
-                    <a href="https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB57" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">Bill text</a>
-                  </li>
-                  <li>
-                    <strong>CPUC rate-design rulemaking.</strong> The Commission is considering dedicated rate design for data centers and other large loads to prevent cost-shifting, coordinated with the SB 57 assessment. No statewide data-center tariff is in effect yet.{' '}
-                    <a href="https://www.cpuc.ca.gov/" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">CPUC</a>
-                  </li>
-                  <li>
-                    <strong>Interim case-by-case deals.</strong> Individual large-load agreements (for example involving Microsoft and STACK Infrastructure) have used refund caps and longer commitments to limit ratepayer risk while the broader rules are worked out.
-                  </li>
-                </ul>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-fog-50 border border-fog-200 rounded-md p-4 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge status="modeled" />
+                      <h4 className="text-sm font-semibold text-asphalt-900">Modeled in this app</h4>
+                    </div>
+                    <p className="text-xs text-stone-500">Simplified bill-<em>inspired</em> scenarios on the Plan tab. Not statute text and not a CPUC tariff.</p>
+                    <ul className="text-sm text-stone-600 list-disc pl-5 space-y-1">
+                      <li><strong>SB 886 style:</strong> who pays for placeholder grid upgrades (75% / 100% by MW threshold).</li>
+                      <li><strong>SB 887 style:</strong> single CEQA-month clock (12 / 36 / 48).</li>
+                      <li><strong>AB 1577 style:</strong> disclosure cadence above 0.5 MW.</li>
+                    </ul>
+                  </div>
+                  <div className="bg-fog-50 border border-fog-200 rounded-md p-4 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <EvidenceBadge level="moderate" />
+                      <StatusBadge status="enacted" />
+                      <h4 className="text-sm font-semibold text-asphalt-900">Enacted / active (outside the dials)</h4>
+                    </div>
+                    <p className="text-xs text-stone-500">Real law and proceedings. They do not drive the scorecard numbers.</p>
+                    <ul className="text-sm text-stone-600 list-disc pl-5 space-y-1.5">
+                      <li>
+                        <strong>SB 57 (Padilla), 2025.</strong> Directs the CPUC to assess data-center cost impacts, stranded costs, and cost shifts, with a report due to the Legislature by January 1, 2027. Study-first: it does <em>not</em> create a data-center rate class yet.{' '}
+                        <a href="https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB57" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">Bill text</a>
+                      </li>
+                      <li>
+                        <strong>CPUC R.26-04-009</strong> (Advanced Electric Rate Design OIR, April 2026). Considers rate design for data centers and other large loads in coordination with the SB 57 assessment. No statewide data-center tariff is in effect yet.{' '}
+                        <a href="https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M604/K677/604677976.PDF" target="_blank" rel="noopener noreferrer" className="underline text-stone-700 hover:text-stone-900">OIR PDF</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-start gap-2 text-sm text-stone-600">
+                  <EvidenceBadge level="weak" />
+                  <p className="flex-1 leading-relaxed">
+                    <strong>Illustrative press examples (not locked evidence):</strong> individual large-load agreements (for example involving Microsoft and STACK Infrastructure) have been reported to use refund caps and longer commitments while broader rules are worked out. Treat as context only.
+                  </p>
+                </div>
                 <p className="text-xs text-stone-500 border-t border-stone-100 pt-2">
-                  Takeaway for the payback number on the Plan tab: because these obligations (full interconnection cost responsibility, minimum-take commitments, clean-energy contracts) are still being decided, a facility's real cost of development could rise. The model's payback is a deliberately optimistic screen.
+                  Takeaway for the payback number on the Plan tab: because interconnection cost responsibility, minimum-take commitments, and related obligations are still being decided, a facility&apos;s real development cost could rise. The model&apos;s payback is a deliberately optimistic screen.
                 </p>
               </article>
+              </div>
 
               <h3 id="how-math" className="section-kicker text-base font-semibold uppercase tracking-wide pt-2 scroll-mt-4">Formulas and worked example</h3>
 
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
+              <section className="bg-white border border-fog-200 rounded-md p-4 space-y-2">
                 <label className="block text-sm font-semibold text-stone-800">
                   Worked example
                   <select
@@ -2353,7 +3915,7 @@
                   <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
                     <li><strong>Threshold:</strong> At 25 MW and above, developer pays 100% of modeled upgrade cost.</li>
                     <li><strong>Upgrade cost:</strong> <code className="text-xs bg-stone-100 px-1 rounded">MW x utility $/MW</code>. PG&E $250k, SDG&E $410k, SCE $180k per MW (illustrative placeholders).</li>
-                    <li><strong>Below 25 MW:</strong> Developer 75%, ratepayers 25% in this scenario.</li>
+                    <li><strong>Below 25 MW:</strong> Developer 75%; residual 25% to other customers / rate base (class split not modeled).</li>
                     <li><strong>Clean energy:</strong> At 25 MW and above, annual = <code className="text-xs bg-stone-100 px-1 rounded">MW x 50% x $75,000</code>, x 15 years.</li>
                   </ul>
                   <div className="flex items-center gap-2 pt-2"><StatusBadge status="modeled" /><h4 className="font-semibold text-stone-900 text-sm">CEQA timeline (SB 887 style)</h4></div>
@@ -2389,7 +3951,7 @@
                 </section>
               </CollapsibleSection>
 
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
+              <section className="bg-white border border-fog-200 rounded-md p-4 space-y-2">
                 <h3 className="font-semibold text-stone-900 text-sm">Model assumptions</h3>
                 <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
                   {baselines.modelAssumptions.map((assumption) => (
@@ -2398,7 +3960,7 @@
                 </ul>
               </section>
 
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
+              <section className="bg-white border border-fog-200 rounded-md p-4 space-y-2">
                 <h3 className="font-semibold text-stone-900 text-sm">Known limitations</h3>
                 <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
                   <li>No site-specific substation or geography inputs.</li>
@@ -2408,7 +3970,7 @@
                 </ul>
               </section>
 
-              <section className="bg-white border border-stone-200 rounded-lg p-4 space-y-2 shadow-sm">
+              <section className="bg-white border border-fog-200 rounded-md p-4 space-y-2">
                 <h3 className="font-semibold text-stone-900 text-sm">Source links</h3>
                 <ul className="text-sm text-stone-600 space-y-1.5 list-disc pl-5">
                   {baselines.metadata.sources.map((source) => (
@@ -2424,16 +3986,23 @@
                   </li>
                 </ul>
               </section>
+              </div>
             </main>
           )}
 
-          <footer className="no-print mt-auto border-t border-asphalt-800 bg-asphalt-900 py-6 text-center text-xs text-fog-200 space-y-1.5">
-            <p className="text-white font-medium">{baselines.metadata.appTitle} · Updated {baselines.metadata.lastUpdated}</p>
+          <footer className="no-print mt-auto border-t border-fog-200 bg-white py-6 text-center text-xs text-fog-700 space-y-1.5">
+            <p className="text-asphalt-900 font-medium">{baselines.metadata.appTitle} · Updated {baselines.metadata.lastUpdated}</p>
             <p>
               Built by {baselines.metadata.authorName} ·{' '}
-              <a href={baselines.metadata.repoUrl} target="_blank" rel="noopener noreferrer" className="underline text-chaparral-500 hover:text-chaparral-100">View source on GitHub</a>
+              <a href={baselines.metadata.repoUrl} target="_blank" rel="noopener noreferrer" className="underline text-fog-700 hover:text-asphalt-900">View source on GitHub</a>
             </p>
-            <p className="text-[10px] text-fog-200/70">Not affiliated with PG&E, SCE, SDG&E, CPUC, CEC, or CAISO. Illustrative outputs only.</p>
+            <p className="text-[10px] text-fog-700 max-w-2xl mx-auto leading-relaxed px-4">
+              {baselines.metadata.topBarBriefing} <strong>{baselines.metadata.disclaimer}</strong>
+            </p>
+            <p className="text-[10px] text-fog-700">Not affiliated with PG&E, SCE, SDG&E, CPUC, CEC, or CAISO. Illustrative outputs only.</p>
+            <p className="text-[10px] text-fog-700">
+              Photo credits: see <a href="media/SOURCES.md" className="underline hover:text-asphalt-900">media/SOURCES.md</a>
+            </p>
           </footer>
         </div>
       );

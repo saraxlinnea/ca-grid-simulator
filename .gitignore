@@ -5,3 +5,6 @@ node_modules/
 
 # Local Cursor agent context (not for GitHub)
 AGENTS.md
+
+# Local IDE workspace (may reference sibling folders)
+*.code-workspace
